@@ -49,14 +49,20 @@
 					if ( element != null )
 					{
 						element = element.Elements().Single( x => x.Name.LocalName == "proxy" );
-						WebProxy proxy = new WebProxy( element.Attributes().Single( x => x.Name.LocalName == "address" ).Value )
+					    WebProxy proxy = new WebProxy( element.Attributes().Single( x => x.Name.LocalName == "address" ).Value );
+					    if ( element.Attributes().Any( x => x.Name.LocalName == "default" && ( x.Value == "1" || x.Value == "true" ) ) )
 						{
-							Credentials =
+							proxy.UseDefaultCredentials = true;
+                            proxy.Credentials = CredentialCache.DefaultNetworkCredentials;
+						}
+						else
+						{
+                           proxy.Credentials =
 								new NetworkCredential(
 								element.Attributes().Single( x => x.Name.LocalName == "login" ).Value,
-								element.Attributes().Single( x => x.Name.LocalName == "password" ).Value,
-								element.Attributes().Single( x => x.Name.LocalName == "domain" ).Value )
-						};
+                                element.Attributes().Single( x => x.Name.LocalName == "password" ).Value,
+                                element.Attributes().Single( x => x.Name.LocalName == "domain" ).Value);
+						}
 
 						client.Proxy = proxy;
 					}
