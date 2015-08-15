@@ -1,11 +1,11 @@
 ﻿软件名称：  Visual Studio Help Downloader Plus
-原 名 称：  Visual Studio Help Downloader 2012
-原 官 网：  https://vshd2012.codeplex.com/
-软件版本：  3.0.0.1 Beta
-基础版本：  1.1.0.0 Beta
+原 名 称：  Visual Studio 2012/2013/2015 Help Downloader
+原 官 网：  http://vshd.codeplex.com/
+软件版本：  3.0.0.3 Beta
+基础版本：  1.2.0.0 Beta
 软件著作人：NickDal，Alexander Kozlenko
 软件修改人：Cruise Young
-数据来源：  http://services.mtps.microsoft.com/ServiceAPI/catalogs/visualstudio11/
+数据来源：  http://services.mtps.microsoft.com/ServiceAPI/catalogs/
 
 修改内容：  
     1、修改索引文件生成的目录结构，将多个xml文件合并到一个msha文件，并增加“path”等信息，从而与微软官网的一致；
@@ -29,6 +29,12 @@
   2014.05.28日更新内容
     12、按照资源加载顺序，调整界面布局；
     13、修复动态加载微软官网配置时的方式；
+   
+  2015.08.13日更新内容
+    14、修复dev14(Visual Studio 2015)加载语言时挂死(该bug由“远景论坛”的“铁浪”提交,在此表示感谢), 修改为默认加载"en-us"语言，如果没有该语言则显示提供的第一种语言；
+	   
+  2015.08.15日更新内容
+    15、增加在有某vs版本时，而没有对应语言列表，或对应语言列表不足14(Visual Studio 2012/2013语言列表数目)时，手动添加其语言列表(该需求由“CSDN”的“qq_30108695”提提交，在此表示感谢)；
 
 修改依据：
     1、依据是微软官方发布的VS2012Documentation的ISO中的“helpcontentsetup.msha”；
@@ -36,7 +42,7 @@
 注意事项：
     1、运行本软件必须安装“.NET Framework 4.5”；
     2、务必在下载一门语言的“Help Library”之前设置“存储目录”；
-    3、本软件为了更好的服务大家，因而不兼容本软件的修改基础“Visual Studio Help Downloader 2012 v1.1.0.0 Beta”所下的包；
+    3、本软件为了更好的服务大家，因而不兼容本软件的修改基础“Visual Studio 2012/2013/2015 Help Downloader 1.2.0.0 Beta”所下的包；
 
 联系修改人：
     如有修改意见或建议，请到“http://blog.csdn.net/fksec/article/details/8796446”留言，本人将第一时间回复。
