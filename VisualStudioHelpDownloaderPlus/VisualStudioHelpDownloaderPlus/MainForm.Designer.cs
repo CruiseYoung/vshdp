@@ -246,6 +246,8 @@
             this.VisualStudioSelection.Size = new System.Drawing.Size(108, 23);
             this.VisualStudioSelection.Sorted = true;
             this.VisualStudioSelection.TabIndex = 1;
+			//this.VisualStudioSelection.SelectedIndexChanged += new System.EventHandler(this.VsVersionChanged);
+
             // 
             // languageSelection
             // 
@@ -258,6 +260,7 @@
             this.languageSelection.Size = new System.Drawing.Size(108, 23);
             this.languageSelection.Sorted = true;
             this.languageSelection.TabIndex = 3;
+            //this.languageSelection.SelectedIndexChanged += new System.EventHandler(this.BookOptionsChanged);
             // 
             // loadLanguagesTip
             // 

@@ -6,7 +6,7 @@
 	using System.IO;
 	using System.Threading.Tasks;
 	using System.Windows.Forms;
-
+    using System.Diagnostics;
 	/// <summary>
 	///     Main application form.
 	/// </summary>
@@ -26,17 +26,18 @@
 
 			Text = Application.ProductName;
 			products = new List<BookGroup>();
-			cacheDirectory.Text = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.UserProfile ), "Downloads", "HelpLibrary" );
-            //cacheDirectory.Text = Path.Combine( @"F:\Visual Studio 2012\HelpLibrary" );
-		}
+			//startupTip.Visible = false;
+            cacheDirectory.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "HelpLibrary");
+            //cacheDirectory.Text = Path.Combine( @"F:\Visual Studio\HelpLibrary" ); // DEBUG
+        }
 
-		/// <summary>
-		/// Reports a progress update.
-		/// </summary>
-		/// <param name="value">
-		/// The value of the updated progress. (percentage complete)
-		/// </param>
-		public void Report( int value )
+        /// <summary>
+        /// Reports a progress update.
+        /// </summary>
+        /// <param name="value">
+        /// The value of the updated progress. (percentage complete)
+        /// </param>
+        public void Report( int value )
 		{
 			Invoke(
 				new MethodInvoker(
@@ -56,7 +57,21 @@
 		protected override void OnLoad( EventArgs e )
 		{
 			base.OnLoad( e );
-            browseDirectory.Enabled = false;
+            //loadingBooksTip.Visible = false;
+            //startupTip.Visible = true;
+			UpdateLocales();
+		}
+		
+		/// <summary>
+        /// Called to update the available locales for the selected version of visual studio
+        /// </summary>
+
+        private void UpdateLocales()
+        {
+			//loadingBooksTip.Visible = true;
+            //startupTip.Visible = false;
+            //languageSelection.Items.Clear();
+			browseDirectory.Enabled = false;
 			downloadProgress.Style = ProgressBarStyle.Marquee;
             Task.Factory.StartNew(
                 () =>
@@ -92,7 +107,7 @@
                                 if (0 != VisualStudioSelection.Items.Count )
                                 {
                                     //VisualStudioSelection.SelectedIndex = 1; // DEBUG
-                                    VisualStudioSelection.SelectedIndex = 0; // DEBUG
+                                    VisualStudioSelection.SelectedIndex = 0;
                                 }
                             }
                             browseDirectory.Enabled = true;
@@ -198,45 +213,84 @@
             Task.Factory.StartNew(
                 () =>
                 {
-                    using ( Downloader downloader = new Downloader( ) )
+                    using (Downloader downloader = new Downloader())
                     {
-                        return downloader.LoadAvailableLocales( nameCatalog );
+                        return downloader.LoadAvailableLocales(nameCatalog);
                     }
                 }).ContinueWith(
-                        t =>
+                    t =>
+                    {
+                        if (t.Status == TaskStatus.Faulted)
                         {
-                            if ( t.Status == TaskStatus.Faulted )
+                            string message = string.Format(
+                                CultureInfo.CurrentCulture,
+                                "Load Catalogs - {0}",
+                                t.Exception == null ? "Unknown error" : t.Exception.GetBaseException().Message);
+                            MessageBox.Show(
+                                message,
+                                Application.ProductName,
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error,
+                                MessageBoxDefaultButton.Button1,
+                                0);
+                        }
+                        else
+                        {
+                            languageSelection.DisplayMember = "Name";
+                            t.Result.ForEach(x => languageSelection.Items.Add(x));
+
+                            string[] languageCodes = {
+                                    "cs-cz", "de-de", "en-us", "es-es", "fr-fr",
+                                    "it-it", "ja-jp", "ko-kr", "pl-pl", "pt-br",
+                                    "ru-ru", "tr-tr", "zh-cn", "zh-tw"
+                                };
+
+                            if (languageSelection.Items.Count < languageCodes.Length) // DEBUG
                             {
-                                string message = string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    "Load Catalogs - {0}",
-                                    t.Exception == null ? "Unknown error" : t.Exception.GetBaseException().Message );
-                                MessageBox.Show(
-                                    message,
-                                    Application.ProductName,
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Error,
-                                    MessageBoxDefaultButton.Button1,
-                                    0);
-                            }
-                            else
-                            {
-                                languageSelection.DisplayMember = "Name";
-                                t.Result.ForEach( x => languageSelection.Items.Add( x ) );
-                                startupTip.Visible = true;
-                                if( 0 != languageSelection.Items.Count )
+                                languageSelection.Items.Clear();
+
+                                foreach (string languageCode in languageCodes)
                                 {
-                                    languageSelection.SelectedIndex = 2; // DEBUG
-                                    //languageSelection.SelectedIndex = 12; // DEBUG
+                                    languageSelection.Items.Add(
+                                    new Locale
+                                    {
+                                        Code = languageCode,
+                                        CatalogName = nameCatalog.Name,
+                                        Description = nameCatalog.Name,
+                                        Locale_Link = @"../catalogs/" + nameCatalog.Name + @"/" + languageCode
+                                    });
                                 }
-                                ClearBusyState();
-                                loadLanguagesTip.Visible = true;
                             }
-                            ClearVisualStudioBusyState();  
-                            languageSelection.Enabled = true;
-                            loadBooks.Enabled = true;
-                        },
-                        TaskScheduler.FromCurrentSynchronizationContext() );
+
+                            startupTip.Visible = true;
+                            if( 0 != languageSelection.Items.Count )
+                            {
+                                int i = 0;
+                                languageSelection.SelectedIndex = 0;
+                                foreach (Locale loc in languageSelection.Items)
+                                {
+                                    if ("en-us" == loc.Code)
+                                    {
+                                        languageSelection.SelectedIndex = i;
+                                        //break; // DEBUG
+                                    }
+
+                                    //if ("zh-cn" == loc.Code) // DEBUG
+                                    //{
+                                    //    languageSelection.SelectedIndex = i;
+                                    //    //break;
+                                    //}
+                                    ++i;
+                                }
+                            }
+                            ClearBusyState();
+                            loadLanguagesTip.Visible = true;
+                        }
+                        ClearVisualStudioBusyState();  
+                        languageSelection.Enabled = true;
+                        loadBooks.Enabled = true;
+                    },
+                    TaskScheduler.FromCurrentSynchronizationContext() );
         }
 
 		/// <summary>
@@ -460,5 +514,40 @@
 				book.Wanted = e.Item.Checked;
 			}
 		}
+
+		/// <summary>
+		/// Called when the language combobox selection is changed. Clear the
+		/// currently list of available books and reshow the instruction.
+		/// </summary>
+		/// <param name="sender">
+		/// The parameter is not used.
+		/// </param>
+		/// <param name="e">
+		/// The parameter is not used.
+		/// </param>
+		private void BookOptionsChanged( object sender, EventArgs e )
+		{
+			booksList.Items.Clear();
+			downloadBooks.Enabled = false;
+			startupTip.Visible = true;
+        }
+
+        /// <summary>
+        /// Called when the visual studio language combobox selection is changed. Clear the
+        /// currently list of available books and reshow the instruction.
+        /// </summary>
+        /// <param name="sender">
+        /// The parameter is not used.
+        /// </param>
+        /// <param name="e">
+        /// The parameter is not used.
+        /// </param>
+        private void VsVersionChanged(object sender, EventArgs e)
+        {
+            booksList.Items.Clear();
+            languageSelection.Items.Clear();
+            languageSelection.SelectedItem = -1;
+            UpdateLocales();
+        }
 	}
 }

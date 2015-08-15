@@ -77,6 +77,8 @@
                 displayValue = "Visual Studio 2012";
             else if (value == "VisualStudio12")
                 displayValue = "Visual Studio 2013";
+			else if (value == "VisualStudio14" || value == "dev14")
+                displayValue = "Visual Studio 2015";
             else
                 displayValue = string.Empty;
 

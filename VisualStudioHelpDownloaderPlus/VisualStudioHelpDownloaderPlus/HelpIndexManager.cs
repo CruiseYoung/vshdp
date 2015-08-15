@@ -140,7 +140,6 @@
             {
                 throw new XmlException("Missing document root");
             }
-
             return result;
         }
 
