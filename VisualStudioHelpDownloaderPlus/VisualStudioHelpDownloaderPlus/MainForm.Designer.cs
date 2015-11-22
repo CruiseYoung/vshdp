@@ -83,7 +83,7 @@
             // 
             _labelFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             _labelFilter.AutoSize = true;
-            _labelFilter.Location = new System.Drawing.Point(366, 501);
+            _labelFilter.Location = new System.Drawing.Point(378, 501);
             _labelFilter.Name = "_labelFilter";
             _labelFilter.Size = new System.Drawing.Size(93, 15);
             _labelFilter.TabIndex = 13;
@@ -96,7 +96,7 @@
             // 
             // totalSize
             // 
-            totalSize.Text = "Total Size (MB)";
+            totalSize.Text = "Total PackageSizeBytes (MB)";
             totalSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             totalSize.Width = 93;
             // 
@@ -108,7 +108,7 @@
             // 
             // downloadSize
             // 
-            downloadSize.Text = "Download Size (MB)";
+            downloadSize.Text = "Download PackageSizeBytes (MB)";
             downloadSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             downloadSize.Width = 119;
             // 
@@ -122,7 +122,7 @@
             // 
             this.loadLanguages.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.loadLanguages.Enabled = false;
-            this.loadLanguages.Location = new System.Drawing.Point(236, 495);
+            this.loadLanguages.Location = new System.Drawing.Point(253, 495);
             this.loadLanguages.Name = "loadLanguages";
             this.loadLanguages.Size = new System.Drawing.Size(108, 27);
             this.loadLanguages.TabIndex = 2;
@@ -134,7 +134,7 @@
             // 
             this.loadBooks.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.loadBooks.Enabled = false;
-            this.loadBooks.Location = new System.Drawing.Point(580, 495);
+            this.loadBooks.Location = new System.Drawing.Point(592, 495);
             this.loadBooks.Name = "loadBooks";
             this.loadBooks.Size = new System.Drawing.Size(108, 27);
             this.loadBooks.TabIndex = 4;
@@ -243,11 +243,9 @@
             this.VisualStudioSelection.FormattingEnabled = true;
             this.VisualStudioSelection.Location = new System.Drawing.Point(122, 497);
             this.VisualStudioSelection.Name = "VisualStudioSelection";
-            this.VisualStudioSelection.Size = new System.Drawing.Size(108, 23);
+            this.VisualStudioSelection.Size = new System.Drawing.Size(125, 23);
             this.VisualStudioSelection.Sorted = true;
             this.VisualStudioSelection.TabIndex = 1;
-			//this.VisualStudioSelection.SelectedIndexChanged += new System.EventHandler(this.VsVersionChanged);
-
             // 
             // languageSelection
             // 
@@ -255,12 +253,11 @@
             this.languageSelection.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.languageSelection.Enabled = false;
             this.languageSelection.FormattingEnabled = true;
-            this.languageSelection.Location = new System.Drawing.Point(465, 497);
+            this.languageSelection.Location = new System.Drawing.Point(477, 497);
             this.languageSelection.Name = "languageSelection";
             this.languageSelection.Size = new System.Drawing.Size(108, 23);
             this.languageSelection.Sorted = true;
             this.languageSelection.TabIndex = 3;
-            //this.languageSelection.SelectedIndexChanged += new System.EventHandler(this.BookOptionsChanged);
             // 
             // loadLanguagesTip
             // 

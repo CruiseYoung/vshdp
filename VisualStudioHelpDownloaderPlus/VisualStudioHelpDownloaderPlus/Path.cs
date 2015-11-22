@@ -4,9 +4,9 @@
     using System.Globalization;
 
     /// <summary>
-    ///     Represents an MSDN Path
+    ///     Represents an MSDN path
     /// </summary>
-    internal sealed class MSDNPath
+    internal sealed class MSDNPath : IComparable<MSDNPath>
     {
         /// <summary>
         ///     Gets or sets the languages.
@@ -27,7 +27,7 @@
         }
 
         /// <summary>
-        ///     Gets or sets the package name
+        ///     Gets or sets the name
         /// </summary>
         public string Name
         {
@@ -45,7 +45,7 @@
         }
 
         /// <summary>
-        /// Gets or sets the size in skuId.
+        /// Gets or sets the skuId.
         /// </summary>
         public long SkuId
         {
@@ -63,17 +63,6 @@
         }
 
         /// <summary>
-        /// Create a file name for the package file
-        /// </summary>
-        /// <returns>
-        /// A string containing the file name
-        /// </returns>
-        //public string CreateFileName()
-        //{
-        //    return string.Format(CultureInfo.InvariantCulture, "{0}({1}).cab", Name.ToLowerInvariant(), Tag);
-        //}
-
-        /// <summary>
         /// Returns a string representing the object
         /// </summary>
         /// <returns>
@@ -81,7 +70,18 @@
         /// </returns>
         public override string ToString()
         {
-            return Name ?? "NULL";
+            return Name /*?? "NULL"*/;
+        }
+
+        public int CompareTo(MSDNPath other)
+        {
+            if (null == other)
+            {
+                return 1;
+            }
+
+            return string.Compare(SkuName, other.SkuName, true);
+            //return SkuName.CompareTo(other.SkuName);
         }
 
     }

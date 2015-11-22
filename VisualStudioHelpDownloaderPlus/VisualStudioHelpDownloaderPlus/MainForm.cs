@@ -27,8 +27,8 @@
 			Text = Application.ProductName;
 			products = new List<BookGroup>();
 			//startupTip.Visible = false;
-            cacheDirectory.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "HelpLibrary");
-            //cacheDirectory.Text = Path.Combine( @"F:\Visual Studio\HelpLibrary" ); // DEBUG
+            //cacheDirectory.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "HelpLibrary");
+            cacheDirectory.Text = Path.Combine( @"F:\Visual Studio\HelpLibrary" ); // DEBUG
         }
 
         /// <summary>
@@ -59,60 +59,212 @@
 			base.OnLoad( e );
             //loadingBooksTip.Visible = false;
             //startupTip.Visible = true;
-			UpdateLocales();
+			UpdateVisualStudioSelection();
 		}
 		
 		/// <summary>
         /// Called to update the available locales for the selected version of visual studio
         /// </summary>
 
-        private void UpdateLocales()
+        private void UpdateVisualStudioSelection()
         {
-			//loadingBooksTip.Visible = true;
+            //loadingBooksTip.Visible = true;
             //startupTip.Visible = false;
             //languageSelection.Items.Clear();
-			browseDirectory.Enabled = false;
+            VisualStudioSelection.Items.Clear();
+
+            browseDirectory.Enabled = false;
 			downloadProgress.Style = ProgressBarStyle.Marquee;
             Task.Factory.StartNew(
                 () =>
                 {
-                    using ( Downloader downloader = new Downloader() )
+                    using ( var downloader = new Downloader() )
                     {
                         return downloader.LoadAvailableCatalogs();
                     }
-                })
-            .ContinueWith(
-                        t =>
+                }).ContinueWith(
+                t =>
+                {
+                    if (t.Status == TaskStatus.Faulted)
+                    {
+                        string message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            "Load Catalogs - {0}",
+                            t.Exception == null ? "Unknown error" : t.Exception.GetBaseException().Message );
+                        MessageBox.Show(
+                            message,
+                            Application.ProductName,
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error,
+                            MessageBoxDefaultButton.Button1,
+                            0);
+                    }
+                    else
+                    {
+                        //VisualStudioSelection.DisplayMember = "DisplayName";
+                        t.Result.ForEach( x => VisualStudioSelection.Items.Add( x ) );
+
+                        ClearVisualStudioBusyState();
+                        startupTip.Visible = true;
+                        if (0 != VisualStudioSelection.Items.Count )
                         {
-                            if (t.Status == TaskStatus.Faulted)
+                            //VisualStudioSelection.SelectedIndex = 1; // DEBUG
+                            VisualStudioSelection.SelectedIndex = VisualStudioSelection.Items.Count -1;
+                        }
+                    }
+                    browseDirectory.Enabled = true;
+                },
+                TaskScheduler.FromCurrentSynchronizationContext() );
+		}
+
+        /// <summary>
+        /// Called when the load books button is clicked. Load the list of available books for the selected
+        /// language
+        /// </summary>
+        /// <param name="sender">
+        /// The parameter is not used.
+        /// </param>
+        /// <param name="e">
+        /// The parameter is not used.
+        /// </param>
+        private void LoadLanguagesClick(object sender, EventArgs e)
+        {
+            var nameCatalog = VisualStudioSelection.SelectedItem as Catalog;
+            if (nameCatalog == null)
+                return;
+
+            SetVisualStudioBusyState();
+            downloadProgress.Style = ProgressBarStyle.Marquee;
+            startupTip.Visible = false;
+            loadLanguagesTip.Visible = false;
+            loadingBooksTip.Visible = true;
+            browseDirectory.Enabled = false;
+            languageSelection.Enabled = false;
+            loadBooks.Enabled = false;
+
+            booksList.Items.Clear();
+            languageSelection.Items.Clear();
+
+            Task.Factory.StartNew(
+                () =>
+                {
+                    using (var downloader = new Downloader())
+                    {
+                        return downloader.LoadAvailableLocales(nameCatalog);
+                    }
+                }).ContinueWith(
+                t =>
+                {
+                    if (t.Status == TaskStatus.Faulted)
+                    {
+                        string message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            "Load Catalogs - {0}",
+                            t.Exception == null ? "Unknown error" : t.Exception.GetBaseException().Message);
+                        MessageBox.Show(
+                            message,
+                            Application.ProductName,
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error,
+                            MessageBoxDefaultButton.Button1,
+                            0);
+                    }
+                    else
+                    {
+                        languageSelection.DisplayMember = "Locale";
+                        t.Result.ForEach(x => languageSelection.Items.Add(x));
+
+                        startupTip.Visible = true;
+                        if( 0 != languageSelection.Items.Count )
+                        {
+                            int i = 0;
+                            languageSelection.SelectedIndex = 0;
+                            foreach (CatalogLocale loc in languageSelection.Items)
                             {
-                                string message = string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    "Load Catalogs - {0}",
-                                    t.Exception == null ? "Unknown error" : t.Exception.GetBaseException().Message );
-                                MessageBox.Show(
-                                    message,
-                                    Application.ProductName,
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Error,
-                                    MessageBoxDefaultButton.Button1,
-                                    0);
-                            }
-                            else
-                            {
-                                VisualStudioSelection.DisplayMember = "DisplayName";
-                                t.Result.ForEach( x => VisualStudioSelection.Items.Add( x ) );
-                                ClearVisualStudioBusyState();
-                                startupTip.Visible = true;
-                                if (0 != VisualStudioSelection.Items.Count )
+                                if ("en-us" == loc.Locale)
                                 {
-                                    //VisualStudioSelection.SelectedIndex = 1; // DEBUG
-                                    VisualStudioSelection.SelectedIndex = 0;
+                                    languageSelection.SelectedIndex = i;
+                                    //break; // DEBUG
                                 }
+
+                                //if ("zh-cn" == loc.Locale) // DEBUG
+                                //{
+                                //    languageSelection.SelectedIndex = i;
+                                //    //break;
+                                //}
+                                ++i;
                             }
-                            browseDirectory.Enabled = true;
-                        },
-                        TaskScheduler.FromCurrentSynchronizationContext() );
+                        }
+                        ClearBusyState();
+                        loadLanguagesTip.Visible = true;
+                    }
+                    ClearVisualStudioBusyState();  
+                    languageSelection.Enabled = true;
+                    loadBooks.Enabled = true;
+                },
+                TaskScheduler.FromCurrentSynchronizationContext() );
+        }
+
+		/// <summary>
+		/// Called when the load books button is clicked. Load the list of available books for the selected
+		/// language
+		/// </summary>
+		/// <param name="sender">
+		/// The parameter is not used.
+		/// </param>
+		/// <param name="e">
+		/// The parameter is not used.
+		/// </param>
+		private void LoadBooksClick( object sender, EventArgs e )
+		{
+            var catalog = VisualStudioSelection.SelectedItem as Catalog;
+            var catalogLocale = languageSelection.SelectedItem as CatalogLocale;
+            if (catalog == null || catalogLocale == null)
+                return;
+
+            SetVisualStudioBusyState();
+			SetBusyState();
+			downloadProgress.Style = ProgressBarStyle.Marquee;
+            startupTip.Visible = false;
+            loadLanguagesTip.Visible = false;
+            loadingBooksTip.Visible = true;
+
+            booksList.Items.Clear();
+
+			Task.Factory.StartNew(
+				() =>
+					{
+						using ( var downloader = new Downloader( ) )
+						{
+                            return downloader.LoadBooksInformation(catalog, catalogLocale);
+						}
+					} ).ContinueWith(
+						t =>
+							{
+								if ( t.Status == TaskStatus.Faulted )
+								{
+									string message = string.Format(
+										CultureInfo.CurrentCulture,
+										"Failed to retrieve book information - {0}",
+										t.Exception == null ? "Unknown error" : t.Exception.GetBaseException().Message );
+									MessageBox.Show(
+										message,
+										Application.ProductName,
+										MessageBoxButtons.OK,
+										MessageBoxIcon.Error,
+										MessageBoxDefaultButton.Button1,
+										0 );
+								}
+								else
+								{
+                                    products = t.Result;
+									DisplayBooks();
+								}
+
+                                ClearVisualStudioBusyState();
+								ClearBusyState();
+							}, 
+						TaskScheduler.FromCurrentSynchronizationContext() );
 		}
 
 		/// <summary>
@@ -126,10 +278,10 @@
 		/// </param>
 		private void DownloadBooksClick( object sender, EventArgs e )
 		{
-            //string nameCatalog = ( ( Catalog )VisualStudioSelection.SelectedItem).Name;
-            //string codeLocale = ( ( Locale )languageSelection.SelectedItem ).Code;
-            Catalog nameCatalog = ( Catalog )VisualStudioSelection.SelectedItem;
-            Locale codeLocale = ( Locale )languageSelection.SelectedItem;
+            var catalog = VisualStudioSelection.SelectedItem as Catalog;
+            var catalogLocale = languageSelection.SelectedItem as CatalogLocale;
+            if (catalog == null || catalogLocale == null)
+                return;
 
             SetVisualStudioBusyState();
 			SetBusyState();
@@ -145,7 +297,7 @@
 					{
 						using ( Downloader downloader = new Downloader( ) )
 						{
-                            downloader.DownloadBooks(products, cacheDirectory.Text, nameCatalog, codeLocale, this);
+                            downloader.DownloadBooks(products, cacheDirectory.Text, catalog, catalogLocale, this);
 						}
 					} )
 			.ContinueWith(
@@ -180,174 +332,6 @@
 								ClearBusyState();
 								DisplayBooks();
                                 downloadProgress.Value = 0;
-							}, 
-						TaskScheduler.FromCurrentSynchronizationContext() );
-		}
-
-        /// <summary>
-        /// Called when the load books button is clicked. Load the list of available books for the selected
-        /// language
-        /// </summary>
-        /// <param name="sender">
-        /// The parameter is not used.
-        /// </param>
-        /// <param name="e">
-        /// The parameter is not used.
-        /// </param>
-        private void LoadLanguagesClick(object sender, EventArgs e)
-        {
-            Catalog nameCatalog = ( Catalog )VisualStudioSelection.SelectedItem;
-
-            SetVisualStudioBusyState();
-            downloadProgress.Style = ProgressBarStyle.Marquee;
-            startupTip.Visible = false;
-            loadLanguagesTip.Visible = false;
-            loadingBooksTip.Visible = true;
-            browseDirectory.Enabled = false;
-            languageSelection.Enabled = false;
-            loadBooks.Enabled = false;
-
-            booksList.Items.Clear();
-            languageSelection.Items.Clear();
-
-            Task.Factory.StartNew(
-                () =>
-                {
-                    using (Downloader downloader = new Downloader())
-                    {
-                        return downloader.LoadAvailableLocales(nameCatalog);
-                    }
-                }).ContinueWith(
-                    t =>
-                    {
-                        if (t.Status == TaskStatus.Faulted)
-                        {
-                            string message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                "Load Catalogs - {0}",
-                                t.Exception == null ? "Unknown error" : t.Exception.GetBaseException().Message);
-                            MessageBox.Show(
-                                message,
-                                Application.ProductName,
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Error,
-                                MessageBoxDefaultButton.Button1,
-                                0);
-                        }
-                        else
-                        {
-                            languageSelection.DisplayMember = "Name";
-                            t.Result.ForEach(x => languageSelection.Items.Add(x));
-
-                            string[] languageCodes = {
-                                    "cs-cz", "de-de", "en-us", "es-es", "fr-fr",
-                                    "it-it", "ja-jp", "ko-kr", "pl-pl", "pt-br",
-                                    "ru-ru", "tr-tr", "zh-cn", "zh-tw"
-                                };
-
-                            if (languageSelection.Items.Count < languageCodes.Length) // DEBUG
-                            {
-                                languageSelection.Items.Clear();
-
-                                foreach (string languageCode in languageCodes)
-                                {
-                                    languageSelection.Items.Add(
-                                    new Locale
-                                    {
-                                        Code = languageCode,
-                                        CatalogName = nameCatalog.Name,
-                                        Description = nameCatalog.Name,
-                                        Locale_Link = @"../catalogs/" + nameCatalog.Name + @"/" + languageCode
-                                    });
-                                }
-                            }
-
-                            startupTip.Visible = true;
-                            if( 0 != languageSelection.Items.Count )
-                            {
-                                int i = 0;
-                                languageSelection.SelectedIndex = 0;
-                                foreach (Locale loc in languageSelection.Items)
-                                {
-                                    if ("en-us" == loc.Code)
-                                    {
-                                        languageSelection.SelectedIndex = i;
-                                        //break; // DEBUG
-                                    }
-
-                                    //if ("zh-cn" == loc.Code) // DEBUG
-                                    //{
-                                    //    languageSelection.SelectedIndex = i;
-                                    //    //break;
-                                    //}
-                                    ++i;
-                                }
-                            }
-                            ClearBusyState();
-                            loadLanguagesTip.Visible = true;
-                        }
-                        ClearVisualStudioBusyState();  
-                        languageSelection.Enabled = true;
-                        loadBooks.Enabled = true;
-                    },
-                    TaskScheduler.FromCurrentSynchronizationContext() );
-        }
-
-		/// <summary>
-		/// Called when the load books button is clicked. Load the list of available books for the selected
-		/// language
-		/// </summary>
-		/// <param name="sender">
-		/// The parameter is not used.
-		/// </param>
-		/// <param name="e">
-		/// The parameter is not used.
-		/// </param>
-		private void LoadBooksClick( object sender, EventArgs e )
-		{
-            Locale codeLocale = ( Locale )languageSelection.SelectedItem;
-
-            SetVisualStudioBusyState();
-			SetBusyState();
-			downloadProgress.Style = ProgressBarStyle.Marquee;
-            startupTip.Visible = false;
-            loadLanguagesTip.Visible = false;
-            loadingBooksTip.Visible = true;
-
-            booksList.Items.Clear();
-
-			Task.Factory.StartNew(
-				() =>
-					{
-						using ( Downloader downloader = new Downloader( ) )
-						{
-                            return downloader.LoadBooksInformation( codeLocale );
-						}
-					} ).ContinueWith(
-						t =>
-							{
-								if ( t.Status == TaskStatus.Faulted )
-								{
-									string message = string.Format(
-										CultureInfo.CurrentCulture,
-										"Failed to retrieve book information - {0}",
-										t.Exception == null ? "Unknown error" : t.Exception.GetBaseException().Message );
-									MessageBox.Show(
-										message,
-										Application.ProductName,
-										MessageBoxButtons.OK,
-										MessageBoxIcon.Error,
-										MessageBoxDefaultButton.Button1,
-										0 );
-								}
-								else
-								{
-									products = t.Result;
-									DisplayBooks();
-								}
-
-                                ClearVisualStudioBusyState();
-								ClearBusyState();
 							}, 
 						TaskScheduler.FromCurrentSynchronizationContext() );
 		}
@@ -405,62 +389,70 @@
 		/// </summary>
 		private void DisplayBooks()
 		{
-            string nameCatalog = (( Catalog )VisualStudioSelection.SelectedItem ).Name;
-            string codeLocale = ( ( Locale )languageSelection.SelectedItem ).Code;
+            var catalog = VisualStudioSelection.SelectedItem as Catalog;
+            var catalogLocale = languageSelection.SelectedItem as CatalogLocale;
+            if (catalog == null || catalogLocale == null)
+                return;
 
             booksList.Items.Clear();
             // unused
 			if ( !string.IsNullOrEmpty( cacheDirectory.Text ) )
 			{
-                Downloader.CheckPackagesStates( products, cacheDirectory.Text, nameCatalog, codeLocale );
+                Downloader.CheckPackagesStates( products, cacheDirectory.Text, catalog, catalogLocale);
 			}
 
 			Dictionary<string, ListViewGroup> groups = new Dictionary<string, ListViewGroup>();
-			foreach ( BookGroup product in products )
+			foreach ( var product in products )
 			{
-				foreach ( Book book in product.Books )
+				foreach ( var book in product.Books )
 				{
 					// Calculate some details about any prospective download
 					long totalSize = 0;
 					long downloadSize = 0;
 					int packagesOutOfDate = 0;
 					int packagesCached = 0;
-					foreach ( Package package in book.Packages )
+					foreach ( var package in book.Packages )
 					{
-						totalSize += package.Size;
+						totalSize += package.PackageSizeBytes;
 						
                         //if ( package.State == PackageState.NotDownloaded )
                         if ( package.State != PackageState.Ready )
                         {
-                            downloadSize += package.Size;
-                            packagesOutOfDate++;
+                            downloadSize += package.PackageSizeBytes;
+                            ++packagesOutOfDate;
                         }
 
-                        if ( package.State != PackageState.NotDownloaded )
+                        if (package.State != PackageState.NotDownloaded)
                         {
-                            packagesCached++;
+                            ++packagesCached;
                         }
-					}
+                    }
 
-					// Make sure the groups aren't duplicated
-					ListViewGroup itemGroup;
-					if ( groups.ContainsKey( book.Category ) )
-					{
-						itemGroup = groups[book.Category];
-					}
-					else
-					{
-						itemGroup = booksList.Groups.Add( book.Category, book.Category );
-						groups.Add( book.Category, itemGroup );
-					}
+                    // Make sure the groups aren't duplicated
+                    string category;
+                    if (catalog.Name == "dev10")
+                        category = product.Name;
+                    else
+                        category = book.Category;
 
-					ListViewItem item = booksList.Items.Add( book.Name );
-					item.SubItems.Add( ( totalSize / ( 1024*1024.0 ) ).ToString( "F1", CultureInfo.CurrentCulture ) );
+                    ListViewGroup itemGroup;
+                    if (groups.ContainsKey(category))
+                    {
+                        itemGroup = groups[category];
+                    }
+                    else
+                    {
+                        itemGroup = booksList.Groups.Add(category, category);
+                        groups.Add(category, itemGroup);
+                    }
+
+                    ListViewItem item = booksList.Items.Add( book.Name );
+					item.SubItems.Add( ( totalSize / ( 1024*1024.0 ) ).ToString( "F2", CultureInfo.CurrentCulture ) );
 					item.SubItems.Add( book.Packages.Count.ToString( CultureInfo.CurrentCulture ) );
-					item.SubItems.Add( ( downloadSize / ( 1024*1024.0 ) ).ToString( "F1", CultureInfo.CurrentCulture ) );
+					item.SubItems.Add( ( downloadSize / ( 1024*1024.0 ) ).ToString( "F2", CultureInfo.CurrentCulture ) );
 					item.SubItems.Add( packagesOutOfDate.ToString( CultureInfo.CurrentCulture ) );
 					item.ToolTipText = book.Description;
-					item.Checked = packagesCached > 1;
+					item.Checked = packagesCached > 0;
 					book.Wanted = item.Checked;
 					item.Tag = book;
 					item.Group = itemGroup;
@@ -547,7 +539,7 @@
             booksList.Items.Clear();
             languageSelection.Items.Clear();
             languageSelection.SelectedItem = -1;
-            UpdateLocales();
+            //UpdateVisualStudioSelection();
         }
-	}
+    }
 }

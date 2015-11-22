@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Catalog.cs" />
+    <Compile Include="CatalogLocale.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -80,9 +81,7 @@
     <Compile Include="Book.cs" />
     <Compile Include="Downloader.cs" />
     <Compile Include="HelpIndexManager.cs" />
-    <Compile Include="ItemBase.cs" />
     <Compile Include="BookGroup.cs" />
-    <Compile Include="Locale.cs" />
     <Compile Include="Package.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -90,7 +89,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Default.snk" />
     <None Include="Properties\App.manifest" />
   </ItemGroup>

@@ -26,15 +26,6 @@
 		}
 
 		/// <summary>
-		///     Gets or sets the item locale.
-		/// </summary>
-        public Locale Locale
-        {
-            get;
-            set;
-        }
-
-		/// <summary>
         ///     Gets or sets the item description.
 		/// </summary>
         public string Description
@@ -60,7 +51,7 @@
 		/// </returns>
         //public override string ToString()
         //{
-        //    return string.Format( CultureInfo.InvariantCulture, "{0} [{1}]", Name ?? "NULL", Locale.Name ?? "NULL" );
+        //    return string.Format( CultureInfo.InvariantCulture, "{0} [{1}]", Name ?? "NULL", Locale_c.Name ?? "NULL" );
         //}
 	}
 }

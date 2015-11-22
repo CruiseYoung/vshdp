@@ -22,17 +22,21 @@
 		/// The http client used for downloading
 		/// </summary>
 		private WebClient client = new WebClient();
+        private WebProxy proxy;
+        private const string _BRANDING_PACKAGE_URL = @"http://packages.mtps.microsoft.com/brands/";
+        public const string BRANDING_PACKAGE_NAME1 = "dev10";
+        public const string BRANDING_PACKAGE_NAME2 = "dev10-ie6";
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Downloader"/> class.
-		/// </summary>
-		/// <exception cref="XmlException">
-		/// If the settings cannot be loaded
-		/// </exception>
-		/// <exception cref="InvalidOperationException">
-		/// If the data cannot be processed
-		/// </exception>
-		public Downloader( )
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Downloader"/> class.
+        /// </summary>
+        /// <exception cref="XmlException">
+        /// If the settings cannot be loaded
+        /// </exception>
+        /// <exception cref="InvalidOperationException">
+        /// If the data cannot be processed
+        /// </exception>
+        public Downloader( )
 		{
             client.BaseAddress = @"http://services.mtps.microsoft.com/ServiceAPI/catalogs/";
 
@@ -49,14 +53,15 @@
 					if ( element != null )
 					{
 						element = element.Elements().Single( x => x.Name.LocalName == "proxy" );
-					    WebProxy proxy = new WebProxy( element.Attributes().Single( x => x.Name.LocalName == "address" ).Value );
-					    if ( element.Attributes().Any( x => x.Name.LocalName == "default" && ( x.Value == "1" || x.Value == "true" ) ) )
-						{
-							proxy.UseDefaultCredentials = true;
+                        /*WebProxy*/
+                        proxy = new WebProxy(element.Attributes().Single(x => x.Name.LocalName == "address").Value);
+                        if (element.Attributes().Any(x => x.Name.LocalName == "default" && (x.Value == "1" || x.Value == "true")))
+                        {
+                            proxy.UseDefaultCredentials = true;
                             proxy.Credentials = CredentialCache.DefaultNetworkCredentials;
-						}
-						else
-						{
+                        }
+                        else
+                        {
                            proxy.Credentials =
 								new NetworkCredential(
 								element.Attributes().Single( x => x.Name.LocalName == "login" ).Value,
@@ -82,22 +87,24 @@
 			Dispose( false );
 		}
 
-		/// <summary>
-		/// Check the current caching status of the packages so that the required downloads can be
-		/// determined
-		/// </summary>
-		/// <param name="bookGroups">
-		/// The collection of bookGroups to check the packages for
-		/// </param>
-		/// <param name="cachePath">
-		/// The directory where the packages are locally cached
-		/// </param>
-		/// <exception cref="ArgumentNullException">
-		/// If bookGroups or cachePath are null
-		/// </exception>
-        public static void CheckPackagesStates(ICollection<BookGroup> bookGroups, string cachePath, string nameCatalog, string codeLocale)// unused
-		{
-			if ( bookGroups == null )
+        /// <summary>
+        /// Check the current caching status of the packages so that the required downloads can be
+        /// determined
+        /// </summary>
+        /// <param name="bookGroups">
+        /// The collection of bookGroups to check the packages for
+        /// </param>
+        /// <param name="cachePath">
+        /// The directory where the packages are locally cached
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If bookGroups or cachePath are null
+        /// </exception>
+        //public static void CheckPackagesStates(ICollection<BookGroup> bookGroups, string cachePath, string nameCatalog, string codeLocale)// unused
+        public static void CheckPackagesStates(ICollection<BookGroup> bookGroups, string cachePath, Catalog catalog, CatalogLocale catalogLocale)// unused
+
+        {
+            if ( bookGroups == null )
 			{
 				throw new ArgumentNullException( "bookGroups" );
 			}
@@ -107,37 +114,54 @@
 				throw new ArgumentNullException( "cachePath" );
 			}
 
-            if ( nameCatalog == null )
+            if (catalog == null )
 			{
-				throw new ArgumentNullException( "nameCatalog" );
+				throw new ArgumentNullException("catalog");
 			}
 
-            if ( codeLocale == null )
+            if (catalogLocale == null )
 			{
-				throw new ArgumentNullException( "codeLocale" );
+				throw new ArgumentNullException("catalogLocale");
 			}
 
             //if ( !Directory.Exists( cachePath ) )
             //    return;
 
-            List<string> cheakCabDirectoryPath = new List<string>();
-            cheakCabDirectoryPath.Add(cachePath);
-
-            cheakCabDirectoryPath.Add(Path.Combine(cachePath, @"packages"));
-            cheakCabDirectoryPath.Add(Path.Combine(cachePath, @"packages", codeLocale.ToLowerInvariant()));
-            if ( !codeLocale.ToLowerInvariant().Contains( @"en-us" ) )
-                cheakCabDirectoryPath.Add(Path.Combine(cachePath, @"packages", @"en-us"));
+            string nameCatalog = catalog.DisplayName;
+            string codeLocale = catalogLocale.Locale;
 
             string vsPath = Path.Combine(cachePath, nameCatalog);
             string packagePath = Path.Combine(vsPath, @"packages");
             string targetDirectory_Locale = Path.Combine(packagePath, codeLocale.ToLowerInvariant());
             string targetDirectory_en_us = Path.Combine(packagePath, "en-us");
 
+            List<string> cheakCabDirectoryPath = new List<string>();
+            cheakCabDirectoryPath.Add(cachePath);
             cheakCabDirectoryPath.Add(vsPath);
             cheakCabDirectoryPath.Add(packagePath);
             cheakCabDirectoryPath.Add(targetDirectory_Locale);
             if (!codeLocale.ToLowerInvariant().Contains(@"en-us"))
                 cheakCabDirectoryPath.Add(targetDirectory_en_us);
+
+            string oldVsDirName = catalog.Name;
+            if (oldVsDirName == "dev10")
+                oldVsDirName = "VisualStudio10";
+            string oldvsPath = Path.Combine(cachePath, oldVsDirName);
+            string oldpackagePath = Path.Combine(oldvsPath, @"packages");
+            string oldtargetDirectory_Locale = Path.Combine(oldpackagePath, codeLocale.ToLowerInvariant());
+            string oldtargetDirectory_en_us = Path.Combine(oldpackagePath, "en-us");
+            cheakCabDirectoryPath.Add(cachePath);
+            cheakCabDirectoryPath.Add(oldvsPath);
+            cheakCabDirectoryPath.Add(oldpackagePath);
+            cheakCabDirectoryPath.Add(oldtargetDirectory_Locale);
+            if (!codeLocale.ToLowerInvariant().Contains(@"en-us"))
+                cheakCabDirectoryPath.Add(oldtargetDirectory_en_us);
+            
+            cheakCabDirectoryPath.Add(Path.Combine(cachePath, @"packages"));
+            cheakCabDirectoryPath.Add(Path.Combine(cachePath, @"packages", codeLocale.ToLowerInvariant()));
+            if ( !codeLocale.ToLowerInvariant().Contains( @"en-us" ) )
+                cheakCabDirectoryPath.Add(Path.Combine(cachePath, @"packages", @"en-us"));
+
 
             List<string> cabDirectoryPath = new List<string>(); 
             foreach (string directoryPath in cheakCabDirectoryPath)
@@ -145,11 +169,8 @@
                 if (!Directory.Exists(directoryPath))
                     continue;
 
-                foreach (string file in Directory.GetFiles( directoryPath, "*.cab"))
-			    {
+                if(Directory.GetFiles(directoryPath, "*.cab").Length>0)
                     cabDirectoryPath.Add(directoryPath);
-				    break;
-			    }
             }
 
             if (!Directory.Exists(cachePath))
@@ -183,20 +204,15 @@
                         else if (package.Name.ToLowerInvariant().Contains(codeLocale.ToLowerInvariant()))
                             packagePathDest = targetDirectory_Locale;
 
-                        packagePathDest = Path.Combine(packagePathDest, package.Name);
-                        packagePathDest = string.Format(CultureInfo.InvariantCulture, "{0}({1})", packagePathDest, package.Tag);
-                        packagePathDest = Path.ChangeExtension(packagePathDest, ".cab");
-
-                        FileInfo packageFileDest;
+                        packagePathDest = Path.Combine(packagePathDest, package.CreateFileName());
+                        FileInfo packageFileDest = new FileInfo(packagePathDest);
 
                         foreach (string directoryPath in cheakCabDirectoryPath)
                         {
-                            string packagePathSrc = Path.Combine(directoryPath, package.Name);
-                            packagePathSrc = string.Format(CultureInfo.InvariantCulture, "{0}({1})", packagePathSrc, package.Tag);
-                            packagePathSrc = Path.ChangeExtension(packagePathSrc, ".cab");
+                            string packagePathSrc = Path.Combine(directoryPath, package.CreateFileName());
 
                             FileInfo packageFileSrc = new FileInfo(packagePathSrc);
-                            packageFileDest = new FileInfo(packagePathDest);
+                            //packageFileDest = new FileInfo(packagePathDest);
 
                             //if (packageFileSrc.Exists)
                             //    packageFileSrc.MoveTo(Path.Combine(packagePathDest));
@@ -213,7 +229,7 @@
                         packageFileDest = new FileInfo( packagePathDest );
                         if ( packageFileDest.Exists )
 						{
-                            //if ( packageFileDest.Length == new Downloader().FetchContentLength( package.Link ) )
+                            //if ( packageFileDest.Length == new Downloader().FetchContentLength( package.CurrentLink ) )
                             //{
                                 if ( packageFileDest.LastWriteTime == package.LastModified )
 							    {
@@ -265,8 +281,26 @@
 		/// </exception>
         public ICollection<Catalog> LoadAvailableCatalogs()
 		{
-            return HelpIndexManager.LoadCatalogs( client.DownloadData( "" ) );
-		}
+            ICollection<Catalog> result = HelpIndexManager.LoadCatalogs( client.DownloadData( "" ) );
+
+            Catalog catalog_VisualStudio10 = new Catalog()
+            {
+                Name = "VisualStudio10",
+                Description = "VisualStudio10",
+                CatalogLink = string.Empty//"../catalogs/VisualStudio10"
+            };
+            Catalog catalog_dev10 = new Catalog()
+            {
+                Name = "dev10",
+                Description = "dev10",
+                CatalogLink = string.Empty//"../catalogs/dev10"
+            };
+            if (!result.Contains(catalog_VisualStudio10) && !result.Contains(catalog_dev10))
+                result.Add(catalog_dev10);
+
+		    (result as List<Catalog>).Sort();
+            return result;
+        }
 
         /// <summary>
         /// Retrieves a collection of locales available to download the help for
@@ -283,50 +317,86 @@
         /// <exception cref="InvalidOperationException">
         /// If the data cannot be processed
         /// </exception>
-        public ICollection<Locale> LoadAvailableLocales( Catalog nameCatalog )
+        public ICollection<CatalogLocale> LoadAvailableLocales(Catalog nameCatalog)
         {
 
             if (nameCatalog == null)
             {
-                throw new ArgumentNullException("nameCatalog");
+                throw new ArgumentNullException("catalog");
             }
 
-            return HelpIndexManager.LoadLocales( client.DownloadData( nameCatalog.Catalog_Link ) );
+            ICollection<CatalogLocale> result;
+            if (string.Empty == nameCatalog.CatalogLink)
+            {
+                result = new List<CatalogLocale>();
+            }
+            else
+            {
+                result = HelpIndexManager.LoadLocales(client.DownloadData(nameCatalog.CatalogLink));
+            }
+
+            //List<CatalogLocale> result = new List<CatalogLocale>();
+
+            string[] Names = {
+                                "cs-cz", "de-de", "en-us", "es-es", "fr-fr",
+                                "it-it", "ja-jp", "ko-kr", "pl-pl", "pt-br",
+                                "ru-ru", "tr-tr", "zh-cn", "zh-tw"
+                            };
+
+            if (result.Count < Names.Length)
+            {
+                result.Clear();
+                foreach (string name in Names)
+                {
+                    result.Add(
+                        new CatalogLocale
+                        {
+                            Locale = name,
+                            CatalogName = nameCatalog.Name,
+                            Description = nameCatalog.Name,
+                            LocaleLink = ((string.Empty != nameCatalog.CatalogLink) 
+                                ? (nameCatalog.CatalogLink + @"/" + name)
+                                : (@"../catalogs/" + nameCatalog.Name + @"/" + name))
+                        });
+                }
+            }
+            (result as List<CatalogLocale>).Sort();
+            return result;
         }
 
-		/// <summary>
-		/// Download information about the available books for the selected locale
-		/// </summary>
-		/// <param name="path">
-		/// The relative path to the book catalog download location
-		/// </param>
-		/// <returns>
-		/// Collection of available bookGroups
-		/// </returns>
-		/// <exception cref="NullReferenceException">
-		/// If path is null or empty
-		/// </exception>
-		/// <exception cref="WebException">
-		/// If the data cannot be downloaded
-		/// </exception>
-		/// <exception cref="XmlException">
-		/// If the data cannot be processed
-		/// </exception>
-		/// <exception cref="InvalidOperationException">
-		/// If the data cannot be processed
-		/// </exception>
-        public ICollection<BookGroup> LoadBooksInformation( Locale codeLocale )
+        /// <summary>
+        /// Download information about the available books for the selected locale
+        /// </summary>
+        /// <param name="path">
+        /// The relative path to the book catalog download location
+        /// </param>
+        /// <returns>
+        /// Collection of available bookGroups
+        /// </returns>
+        /// <exception cref="NullReferenceException">
+        /// If path is null or empty
+        /// </exception>
+        /// <exception cref="WebException">
+        /// If the data cannot be downloaded
+        /// </exception>
+        /// <exception cref="XmlException">
+        /// If the data cannot be processed
+        /// </exception>
+        /// <exception cref="InvalidOperationException">
+        /// If the data cannot be processed
+        /// </exception>
+        public ICollection<BookGroup> LoadBooksInformation(Catalog catalog, CatalogLocale catalogLocale )
 		{
-            if (codeLocale == null)
+            if (catalogLocale == null)
             {
-                throw new ArgumentNullException("codeLocale");
+                throw new ArgumentNullException("catalogLocale");
             }
 
             // 由于返回的Locale_Link的相对地址有问题，所以
             // client.BaseAddress = @"http://services.mtps.microsoft.com/ServiceAPI/catalogs/";
             // 不能改为
             // client.BaseAddress = @"http://services.mtps.microsoft.com/ServiceAPI/catalogs";
-            return HelpIndexManager.LoadBooks( client.DownloadData( codeLocale.Locale_Link ) );
+            return HelpIndexManager.LoadBooks(catalog, client.DownloadData( catalogLocale.LocaleLink) );
 		}
 
 		/// <summary>
@@ -360,7 +430,7 @@
 		/// <exception cref="InvalidOperationException">
 		/// If the data cannot be processed
 		/// </exception>
-        public void DownloadBooks( ICollection<BookGroup> bookGroups, string cachePath, Catalog objCatalog, Locale objLocale, IProgress<int> progress )
+        public void DownloadBooks( ICollection<BookGroup> bookGroups, string cachePath, Catalog objCatalog, CatalogLocale objLocale, IProgress<int> progress )
 		{
 			if ( bookGroups == null )
 			{
@@ -379,58 +449,115 @@
 
             if ( objLocale == null)
 			{
-				throw new ArgumentNullException( "codeLocale" );
+				throw new ArgumentNullException( "catalogLocale" );
 			}
 
-            string nameCatalog = objCatalog.Name;
-            string codeLocale = objLocale.Code;
+            string nameCatalog = objCatalog.DisplayName;
+            string codeLocale = objLocale.Locale;
 
-			//if ( progress == null )
-			//{
-			//	throw new ArgumentNullException( "progress" );
-			//}
+            //if ( progress == null )
+            //{
+            //	throw new ArgumentNullException( "progress" );
+            //}
 
-            DateTime lastModifiedTime = new DateTime( 2000, 1, 1, 0, 0, 0 );
+            DateTime lastModifiedTimeBook = new DateTime(2000, 1, 1, 0, 0, 0);
+            DateTime lastModifiedTimeBookGroup = new DateTime(2000, 1, 1, 0, 0, 0);
+            DateTime lastModifiedTimeCatalogLocale = new DateTime( 2000, 1, 1, 0, 0, 0 );
             List<string> strLocales = new List<string>();
-			bool include_en_us = false;
 			// Create list of unique packages for possible download and write the book group and
 			// book index files
 			Dictionary<string, Package> packages = new Dictionary<string, Package>();
-			foreach ( BookGroup bookGroup in bookGroups )
+            if (objCatalog.Name == "dev10")
+            {
+                var lastModifiedTime = new DateTime(2000, 1, 1, 0, 0, 0);
+
+                // Add branding packages
+                var brandingPackgeName1 = new Package
+                {
+                    Name = BRANDING_PACKAGE_NAME1,
+                    Deployed = @"true",
+                    LastModified = DateTime.Now,
+                    PackageEtag = null,
+                    CurrentLink = string.Format(CultureInfo.InvariantCulture, "{0}{1}.cab", _BRANDING_PACKAGE_URL, BRANDING_PACKAGE_NAME1),
+                    PackageSizeBytes = 0,
+                    PackageSizeBytesUncompressed = 0,
+                    PackageConstituentLink = string.Format(CultureInfo.InvariantCulture, "{0}{1}", @"../../serviceapi/packages/brands/", BRANDING_PACKAGE_NAME1)
+                };
+                brandingPackgeName1.LastModified = FetchLastModified(brandingPackgeName1.CurrentLink);
+                brandingPackgeName1.PackageSizeBytes = FetchContentLength(brandingPackgeName1.CurrentLink);
+                brandingPackgeName1.PackageSizeBytesUncompressed = brandingPackgeName1.PackageSizeBytes;
+                packages.Add(brandingPackgeName1.Name,brandingPackgeName1);
+                if (brandingPackgeName1.LastModified > lastModifiedTime)
+                    lastModifiedTime = brandingPackgeName1.LastModified;
+
+                var brandingPackgeName2 = new Package
+                {
+                    Name = BRANDING_PACKAGE_NAME2,
+                    Deployed = @"true",
+                    LastModified = DateTime.Now,
+                    PackageEtag = null,
+                    CurrentLink = string.Format(CultureInfo.InvariantCulture, "{0}{1}.cab", _BRANDING_PACKAGE_URL, BRANDING_PACKAGE_NAME2),
+                    PackageSizeBytes = 0,
+                    PackageSizeBytesUncompressed = 0,
+                    PackageConstituentLink = string.Format(CultureInfo.InvariantCulture, "{0}{1}", @"../../serviceapi/packages/brands/", BRANDING_PACKAGE_NAME2)
+                };
+                brandingPackgeName2.LastModified = FetchLastModified(brandingPackgeName2.CurrentLink);
+                brandingPackgeName2.PackageSizeBytes = FetchContentLength(brandingPackgeName2.CurrentLink);
+                brandingPackgeName2.PackageSizeBytesUncompressed = brandingPackgeName2.PackageSizeBytes;
+                packages.Add(brandingPackgeName2.Name, brandingPackgeName2);
+                if (brandingPackgeName2.LastModified > lastModifiedTime)
+                    lastModifiedTime = brandingPackgeName2.LastModified;
+            }
+
+            foreach ( BookGroup bookGroup in bookGroups )
 			{
                 //File.WriteAllText(
                 //    Path.Combine( cachePath, bookGroup.CreateFileName() ), 
                 //    HelpIndexManager.CreateBookGroupBooksIndex( bookGroup ), 
                 //    Encoding.UTF8 );
-				Debug.Print( "BookGroup: {0}", bookGroup.Name );
-				foreach ( Book book in bookGroup.Books )
+                //Debug.Print( "BookGroup: {0}", bookGroup.Name );
+                lastModifiedTimeBookGroup = new DateTime(2000, 1, 1, 0, 0, 0);
+                foreach ( Book book in bookGroup.Books )
 				{
-					if ( book.Wanted )
+                    lastModifiedTimeBook = new DateTime(2000, 1, 1, 0, 0, 0);
+                    foreach ( Package package in book.Packages )
+					{
+                        if ( package.LastModified > lastModifiedTimeBook)
+                            lastModifiedTimeBook = package.LastModified;
+
+                        if (book.Wanted)
+                        {
+                            string name = package.Name.ToLowerInvariant();
+							//Debug.Print( "      Package: {0}", name );
+
+                            if ( !packages.ContainsKey(name) )
+                            {
+                                packages.Add( name, package );
+                            }
+                        }
+					}
+                    book.LastModified = lastModifiedTimeBook;
+
+                    if (book.LastModified > lastModifiedTimeBookGroup)
+                        lastModifiedTimeBookGroup = book.LastModified;
+
+                    if ( book.Wanted )
 					{				
-						Debug.Print( "   Book: {0}", book.Name );
+						//Debug.Print( "   Book: {0}", book.Name );
                         //File.WriteAllText(
                         //    Path.Combine( cachePath, book.CreateFileName() ), 
                         //    HelpIndexManager.CreateBookPackagesIndex( bookGroup, book ), 
                         //    Encoding.UTF8 );
-                        if ( !strLocales.Contains( book.Locale.Name ) )
-                            strLocales.Add( book.Locale.Name );
-													
-						foreach ( Package package in book.Packages )
-						{
-                            string name = string.Format( CultureInfo.InvariantCulture, "{0}({1})", package.Name, package.Tag );
-							Debug.Print( "      Package: {0}", name );
-
-                            if ( !packages.ContainsKey( name.ToLowerInvariant() ) )
-                            {
-                                packages.Add( name.ToLowerInvariant(), package );
-                                if ( package.LastModified > lastModifiedTime )
-                                    lastModifiedTime = package.LastModified;
-                            }
-						}
-					}
+                        if ( !strLocales.Contains( book.Locale ) )
+                            strLocales.Add( book.Locale);
+                    }
 				}
-			}
+                bookGroup.LastModified = lastModifiedTimeBookGroup;
+                if (bookGroup.LastModified > lastModifiedTimeCatalogLocale)
+                    lastModifiedTimeCatalogLocale = bookGroup.LastModified;
+            }
 
+			bool include_en_us = false;
             if ( 0 == strLocales.Count )
 				return;
             else if ( 1 == strLocales.Count )
@@ -456,44 +583,50 @@
             // Generate Download File List
             try
             {
-                string listFileName = string.Format( CultureInfo.InvariantCulture, "PackageList({0}).txt", codeLocale );
+                string listFileName = objLocale.CreatePackageListFileName();
                 string listFilePath = Path.Combine( cachePath, listFileName );
 
+                ///
                 if ( File.Exists( listFilePath ) )
                     File.Delete( listFilePath );
 
                 listFilePath = Path.Combine( vsDirectory, listFileName );
+                if (File.Exists(listFilePath))
+                    File.Delete(listFilePath);
 
                 StreamWriter writer = new StreamWriter( listFilePath );
-                foreach ( Package package in packages.Values )
-                    writer.WriteLine( package.Link );
+                //IEnumerable<Package> query = packages.Values.OrderBy(package => package.CurrentLink);
+                var query = packages.Values.ToList<Package>();
+                query.Sort();
+                foreach (Package package in query)
+                    writer.WriteLine(package.CurrentLink);
                 writer.Close();
 
-                FileLastModifiedTime( listFilePath, lastModifiedTime );
-                //File.SetCreationTime( listFilePath, lastModifiedTime );
-                //File.SetLastAccessTime( listFilePath, lastModifiedTime );
-                //File.SetLastWriteTime( listFilePath, lastModifiedTime );
+                FileLastModifiedTime( listFilePath, lastModifiedTimeCatalogLocale );
+                //File.SetCreationTime( listFilePath, lastModifiedTimeCatalogLocale );
+                //File.SetLastAccessTime( listFilePath, lastModifiedTimeCatalogLocale );
+                //File.SetLastWriteTime( listFilePath, lastModifiedTimeCatalogLocale );
             }
             catch ( Exception e )
             {
                 Program.LogException( e );
             }
 
-            // Cleanup index files
-			//Directory.GetFiles( cachePath, "*.msha" ).ForEach( File.Delete );
+            ///
 			Directory.GetFiles( cachePath, "*.xml" ).ForEach( File.Delete );	
 
 			foreach ( string file in Directory.GetFiles( cachePath, "*.msha" ) )
 			{
-				string fileName = Path.GetFileNameWithoutExtension( file );
+				string fileName = Path.GetFileName( file );
 				if ( !string.IsNullOrEmpty( fileName ) )
 				{
 					if ( !fileName.Contains( @"HelpContentSetup" ) )
 					{
 						File.Delete( file );
 					}
-					
-                    if ( fileName == @"HelpContentSetup(" + codeLocale + @")" )
+
+                    if (fileName == @"(" + codeLocale + @")HelpContentSetup")
+                    //if ( fileName == @"HelpContentSetup(" + codeLocale + @")" )
                     {
                         File.Delete( file );
 						//break;
@@ -503,7 +636,7 @@
 
             foreach ( string file in Directory.GetFiles( vsDirectory, "*.msha" ) )
             {
-                string fileName = Path.GetFileNameWithoutExtension( file );
+                string fileName = Path.GetFileName( file );
                 if ( !string.IsNullOrEmpty( fileName ) )
                 {
                     if ( !fileName.Contains( @"HelpContentSetup" ) )
@@ -511,7 +644,7 @@
                         File.Delete( file );
                     }
 
-                    if ( fileName == @"HelpContentSetup( " + codeLocale + @")" )
+                    if ( fileName == @"(" + codeLocale + @")HelpContentSetup")
                     {
                         File.Delete( file );
                         //break;
@@ -521,24 +654,39 @@
 
 			// Creating setup indexes
 			//File.WriteAllText(
-            //Path.Combine( cachePath, "HelpContentSetup.msha" ), HelpIndexManager.CreateSetupIndex( bookGroups, nameCatalog, codeLocale ), Encoding.UTF8 );
+            //Path.Combine( cachePath, "HelpContentSetup.msha" ), HelpIndexManager.CreateSetupIndex( bookGroups, nameCatalog, catalogLocale ), Encoding.UTF8 );
 	
-			string xmlname = string.Format( CultureInfo.InvariantCulture, "HelpContentSetup({0}).msha", codeLocale );
-            xmlname = Path.Combine( vsDirectory, xmlname );
-            File.WriteAllText( xmlname, HelpIndexManager.CreateSetupIndex( bookGroups, nameCatalog, codeLocale ), Encoding.UTF8 );
+			string xmlname = Path.Combine( vsDirectory, objLocale.CreateFileName());
+            if(objCatalog.Name == "dev10")
+                File.WriteAllText( xmlname, HelpIndexManager.CreateSetupIndex10( bookGroups, objCatalog, objLocale, vsDirectory), Encoding.UTF8 );
+            else
+                File.WriteAllText(xmlname, HelpIndexManager.CreateSetupIndex(bookGroups, objCatalog, objLocale), Encoding.UTF8);
 
-            FileLastModifiedTime( xmlname, lastModifiedTime );
-            //File.SetCreationTime( xmlname, lastModifiedTime );
-            //File.SetLastAccessTime( xmlname, lastModifiedTime );
-            //File.SetLastWriteTime( xmlname, lastModifiedTime );
+            FileLastModifiedTime( xmlname, lastModifiedTimeCatalogLocale );
+            //File.SetCreationTime( xmlname, lastModifiedTimeCatalogLocale );
+            //File.SetLastAccessTime( xmlname, lastModifiedTimeCatalogLocale );
+            //File.SetLastWriteTime( xmlname, lastModifiedTimeCatalogLocale );
 
-            string targetDirectory = Path.Combine( vsDirectory, "packages" );
-			string targetDirectory_Locale = Path.Combine( targetDirectory, codeLocale.ToLowerInvariant() );
-			string targetDirectory_en_us = Path.Combine( targetDirectory, "en-us" );
+            string packagesDirectory = Path.Combine( vsDirectory, "packages" );
+			string packagesDirectory_Locale = Path.Combine( packagesDirectory, codeLocale.ToLowerInvariant() );
+			string packagesDirectory_en_us = Path.Combine( packagesDirectory, "en-us" );
 
 			// Cleanup old files
-            //Directory.GetFiles( targetDirectory, "*.cab" ).ForEach( File.Delete );
+            //Directory.GetFiles( packagesDirectory, "*.cab" ).ForEach( File.Delete );
             CleanupOldPackages( packages, null, cachePath, false );
+
+            string oldVsDirName = objCatalog.Name;
+            if (oldVsDirName == "dev10")
+                oldVsDirName = "VisualStudio10";
+            string oldvsDirectory = Path.Combine(cachePath, oldVsDirName);
+            string oldpackagesDirectory = Path.Combine(oldvsDirectory, @"packages");
+            string oldpackagesDirectory_Locale = Path.Combine(oldpackagesDirectory, codeLocale.ToLowerInvariant());
+            string oldpackagesDirectory_en_us = Path.Combine(oldpackagesDirectory, "en-us");
+            CleanupOldPackages(packages, null, oldvsDirectory, false);
+            CleanupOldPackages(packages, null, oldpackagesDirectory, false);
+            CleanupOldPackages(packages, codeLocale, oldpackagesDirectory_Locale, false);
+            if (!codeLocale.ToLowerInvariant().Contains(@"en-us") && include_en_us)
+                CleanupOldPackages(packages, @"en-us", oldpackagesDirectory_en_us, false);
 
             CleanupOldPackages( packages, null, Path.Combine( cachePath, @"packages" ), false);
             CleanupOldPackages( packages, null, Path.Combine( cachePath, @"packages", codeLocale.ToLowerInvariant() ), false) ;
@@ -546,20 +694,20 @@
                 CleanupOldPackages( packages, null, Path.Combine( cachePath, @"packages", @"en-us" ), false );
 
             CleanupOldPackages( packages, null, vsDirectory, false );
-            CleanupOldPackages( packages, null, targetDirectory, false );
-            CleanupOldPackages( packages, codeLocale, targetDirectory_Locale, true );
+            CleanupOldPackages( packages, null, packagesDirectory, false );
+            CleanupOldPackages( packages, codeLocale, packagesDirectory_Locale, true );
             if ( !codeLocale.ToLowerInvariant().Contains( @"en-us" ) && include_en_us )
-                CleanupOldPackages( packages, @"en-us", targetDirectory_en_us, true );
+                CleanupOldPackages( packages, @"en-us", packagesDirectory_en_us, true );
 
-			// Create cachePath
-			if ( !Directory.Exists( targetDirectory ) )
-				Directory.CreateDirectory( targetDirectory );
+            // Create cachePath
+            if ( !Directory.Exists( packagesDirectory ) )
+				Directory.CreateDirectory( packagesDirectory );
 
-			if ( !Directory.Exists( targetDirectory_Locale ) )
-				Directory.CreateDirectory( targetDirectory_Locale );
+			if ( !Directory.Exists( packagesDirectory_Locale ) )
+				Directory.CreateDirectory( packagesDirectory_Locale );
 
-            if ( include_en_us && !Directory.Exists( targetDirectory_en_us ) )
-				Directory.CreateDirectory( targetDirectory_en_us );
+            if ( include_en_us && !Directory.Exists( packagesDirectory_en_us ) )
+				Directory.CreateDirectory( packagesDirectory_en_us );
 
 
 			// Download the packages
@@ -571,28 +719,28 @@
 				string destDirectory;
 				if ( package.Name.ToLowerInvariant().Contains( codeLocale.ToLowerInvariant() ) )
 				{
-					destDirectory = targetDirectory_Locale;
+					destDirectory = packagesDirectory_Locale;
 					if ( package.LastModified > lastModifiedDir_Loc )
                         lastModifiedDir_Loc = package.LastModified;
 				}
 				else if ( package.Name.ToLowerInvariant().Contains( @"en-us" ) )
 				{
-					destDirectory = targetDirectory_en_us;
+					destDirectory = packagesDirectory_en_us;
 					if ( package.LastModified > lastModifiedDir_en_us )
                         lastModifiedDir_en_us = package.LastModified;
 				}
 				else 
-					destDirectory = targetDirectory;
+					destDirectory = packagesDirectory;
 
                 string targetFileName = Path.Combine( destDirectory, package.CreateFileName() );
-
+                
                 // If file exist and file length is the same, skip it
 				if ( package.State != PackageState.NotDownloaded)
                 //if ( package.State == PackageState.OutOfDate )
 				{
 					if ( File.Exists( targetFileName ) )
 					{
-						if ( FetchContentLength( package.Link ) != new FileInfo( targetFileName ).Length )
+						if ( FetchContentLength( package.CurrentLink ) != new FileInfo( targetFileName ).Length )
 						{
 							package.State = PackageState.NotDownloaded;
 							File.Delete( targetFileName );
@@ -602,8 +750,8 @@
 
                 if ( package.State == PackageState.NotDownloaded /*|| package.State == PackageState.OutOfDate*/ )
 				{
-					Debug.Print( "         Downloading : '{0}' to '{1}'", package.Link, targetFileName );
-					client.DownloadFile( package.Link, targetFileName );
+					//Debug.Print( "         Downloading : '{0}' to '{1}'", package.CurrentLink, targetFileName );
+					client.DownloadFile( package.CurrentLink, targetFileName );
 				}
 
                 FileLastModifiedTime( targetFileName, package.LastModified );
@@ -615,12 +763,12 @@
 				progress.Report( 100 * ++packagesCountCurrent / packages.Count );
 			}
 
-            FileLastModifiedTime( targetDirectory_Locale, lastModifiedDir_Loc, true );
+            FileLastModifiedTime( packagesDirectory_Locale, lastModifiedDir_Loc, true );
             if ( !codeLocale.ToLowerInvariant().Contains(@"en-us") && include_en_us )
-                FileLastModifiedTime( targetDirectory_en_us, lastModifiedDir_en_us, true );
-            FileLastModifiedTime( targetDirectory, lastModifiedTime, true );
-            FileLastModifiedTime( vsDirectory, lastModifiedTime, true);
-            FileLastModifiedTime( cachePath, lastModifiedTime, true );
+                FileLastModifiedTime( packagesDirectory_en_us, lastModifiedDir_en_us, true );
+            FileLastModifiedTime( packagesDirectory, lastModifiedTimeCatalogLocale, true );
+            FileLastModifiedTime( vsDirectory, lastModifiedTimeCatalogLocale, true);
+            FileLastModifiedTime( cachePath, lastModifiedTimeCatalogLocale, true );
 		}
 
         private void CleanupOldPackages(Dictionary<string, Package> packages, string codeLocale, string cabDirectory, bool bTargetDirectory_Locale)
@@ -630,19 +778,22 @@
 
             foreach ( string file in Directory.GetFiles( cabDirectory, "*.cab" ) )
             {
-                string fileName = Path.GetFileNameWithoutExtension( file );
+                string fileName = Path.GetFileNameWithoutExtension(file).ToLowerInvariant();
+                var pos = fileName.IndexOf('(');
+                if (pos >=0)
+                    fileName = fileName.Substring(0,pos);
                 if ( !string.IsNullOrEmpty( fileName ) )
                 {
                     if ( bTargetDirectory_Locale )
                     {
-                        if ( !packages.ContainsKey( fileName.ToLowerInvariant() )
-                            || !fileName.ToLowerInvariant().Contains( codeLocale.ToLowerInvariant() ) )
+                        if ( !packages.ContainsKey( fileName)
+                            || !fileName.Contains( codeLocale.ToLowerInvariant() ) )
                         {
                             File.Delete( file );
                         }
                         else
                         {
-                            string packagePathDest = Path.Combine( cabDirectory, packages[fileName.ToLowerInvariant()].CreateFileName() );
+                            string packagePathDest = Path.Combine( cabDirectory, packages[fileName].CreateFileName() );
                             if ( file != packagePathDest /*&& !File.Exists( packagePathDest )*/ )
                             {
                                 FileInfo oldFile = new FileInfo( file );
@@ -652,57 +803,95 @@
                     }
                     else
                     {
-                        foreach (Package package in packages.Values)
-                        {
-                            if (fileName.ToLowerInvariant().Contains(package.Name.ToLowerInvariant() + @"(")
-                                || string.Compare(fileName.ToLowerInvariant(), package.Name.ToLowerInvariant(), true) == 0)
-                            {
-                                File.Delete(file);
-                                break;
-                            }
-                        }
+                        if (packages.ContainsKey(fileName))
+                            File.Delete(file);
+
+                        //foreach (Package package in packages.Values)
+                        //{
+                        //    if (fileName.ToLowerInvariant().Contains(package.Name.ToLowerInvariant()/* + @"("*/)
+                        //        /*|| string.Compare(fileName, package.Name, true) == 0*/)
+                        //    {
+                        //        File.Delete(file);
+                        //        break;
+                        //    }
+                        //}
                     }
                 }
             }
         }
 
-        private long FetchContentLength( string url )
+        private long FetchContentLength(string url)
         {
-            if ( string.IsNullOrWhiteSpace( url ) )
+            if (string.IsNullOrWhiteSpace(url))
                 return 0;
 
             long result = 0;
+            try
+            {
+                var request = (HttpWebRequest)HttpWebRequest.Create(url);
 
-            var request = (HttpWebRequest)HttpWebRequest.Create( url );
+                if (null != proxy)
+                    request.Proxy = proxy;
 
-            var response = (HttpWebResponse)request.GetResponse();
-            //var lastmodified = response.LastModified;
+                var response = (HttpWebResponse)request.GetResponse();
 
-            result = response.ContentLength;
-            response.Close();
+                result = response.ContentLength;
+                response.Close();
+
+            }
+            catch (Exception e)
+            {
+                Program.LogException(e);
+            }
 
             return result;
         }
 
-        private void FileLastModifiedTime( string FilePath, DateTime lastModifiedTime, bool bDirectory = false )
+        private DateTime FetchLastModified(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return DateTime.Now;
+
+            DateTime result = DateTime.Now;
+            try
+            {
+                var request = (HttpWebRequest)HttpWebRequest.Create(url);
+
+                if (null != proxy)
+                    request.Proxy = proxy;
+
+                var response = (HttpWebResponse)request.GetResponse();
+
+                result = response.LastModified;
+                response.Close();
+            }
+            catch (Exception e)
+            {
+                Program.LogException(e);
+            }
+
+            return result;
+        }
+
+        public static void FileLastModifiedTime( string FilePath, DateTime lastModifiedTime, bool bDirectory = false )
         {
             if ( string.IsNullOrWhiteSpace( FilePath ) )
                 return;
-
+            
             DateTime lastModifiedTimeUtc = lastModifiedTime.ToUniversalTime();
             try
             {
                 if ( bDirectory )
                 {
                     Directory.SetCreationTime/*Utc*/( FilePath, lastModifiedTimeUtc );
-                    Directory.SetLastAccessTime/*Utc*/( FilePath, lastModifiedTimeUtc );
                     Directory.SetLastWriteTime/*Utc*/( FilePath, lastModifiedTimeUtc );
+                    Directory.SetLastAccessTime/*Utc*/( FilePath, lastModifiedTimeUtc );
                 }
                 else
                 {
                     File.SetCreationTime/*Utc*/( FilePath, lastModifiedTimeUtc );
-                    File.SetLastAccessTime/*Utc*/( FilePath, lastModifiedTimeUtc );
                     File.SetLastWriteTime/*Utc*/( FilePath, lastModifiedTimeUtc );
+                    File.SetLastAccessTime/*Utc*/( FilePath, lastModifiedTimeUtc );
                 }
             }
             catch (Exception e)
@@ -729,5 +918,5 @@
 				}
 			}
 		}
-	}
+    }
 }
