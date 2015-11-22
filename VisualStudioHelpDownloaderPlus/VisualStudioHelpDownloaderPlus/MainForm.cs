@@ -26,9 +26,9 @@
 
 			Text = Application.ProductName;
 			products = new List<BookGroup>();
-			//startupTip.Visible = false;
-            //cacheDirectory.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "HelpLibrary");
-            cacheDirectory.Text = Path.Combine( @"F:\Visual Studio\HelpLibrary" ); // DEBUG
+            //startupTip.Visible = false;
+            cacheDirectory.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "HelpLibrary");
+            //cacheDirectory.Text = Path.Combine( @"F:\Visual Studio\HelpLibrary" ); // DEBUG
         }
 
         /// <summary>
