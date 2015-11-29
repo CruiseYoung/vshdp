@@ -427,7 +427,12 @@
 			XElement bookgroupsElement = CreateBookGroupBooksIndex ( bookGroups, objCatalog, objLocale);
 			
 			bodyElement.Add(detailsElement, bookgroupsElement);
-			if ( document.Root != null )
+
+            var divElement = CreateElement("div", null, null);
+            divElement.SetAttributeValue(XName.Get("id", string.Empty), "GWDANG_HAS_BUILT");
+            bodyElement.Add(divElement);
+
+            if ( document.Root != null )
 			{
 				document.Root.Add( headElement, bodyElement );
 			}
