@@ -237,7 +237,7 @@
 
                             var localeDes = new Dictionary<string, string>()
                             {
-                                {"fr-fr", @"- français (France)"},
+                                {"fr-fr", @"français (France)"},
                                 {"pt-br", @"Português (Brasil)"},
                                 {"es-es", @"Español (España, alfabetización internacional)"},
                                 //{"en-us", @""},

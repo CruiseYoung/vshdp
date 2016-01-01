@@ -98,6 +98,7 @@
                             MessageBoxIcon.Error,
                             MessageBoxDefaultButton.Button1,
                             0);
+                        downloadProgress.Style = ProgressBarStyle.Continuous;
                     }
                     else
                     {
