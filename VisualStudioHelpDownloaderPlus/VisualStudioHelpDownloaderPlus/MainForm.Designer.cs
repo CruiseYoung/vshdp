@@ -1,11 +1,14 @@
-﻿namespace VisualStudioHelpDownloaderPlus
+﻿using System.ComponentModel;
+using System.Windows.Forms;
+
+namespace VisualStudioHelpDownloaderPlus
 {
     partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components;
+        private IContainer components;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -144,7 +147,7 @@
             // 
             // cacheDirectory
             // 
-            this.cacheDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.cacheDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cacheDirectory.Location = new System.Drawing.Point(122, 459);
             this.cacheDirectory.Name = "cacheDirectory";
@@ -166,7 +169,7 @@
             // 
             // downloadProgress
             // 
-            this.downloadProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.downloadProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.downloadProgress.Location = new System.Drawing.Point(12, 530);
             this.downloadProgress.MarqueeAnimationSpeed = 25;
@@ -213,8 +216,8 @@
             // 
             // booksList
             // 
-            this.booksList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.booksList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.booksList.CheckBoxes = true;
             this.booksList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -304,18 +307,18 @@
 
         #endregion
 
-		private System.Windows.Forms.Button loadBooks;
-        private System.Windows.Forms.Button loadLanguages;
-        private System.Windows.Forms.TextBox cacheDirectory;
-        private System.Windows.Forms.Button browseDirectory;
-        private System.Windows.Forms.ProgressBar downloadProgress;
-        private System.Windows.Forms.Label startupTip;
-		private System.Windows.Forms.Button downloadBooks;
-        private System.Windows.Forms.Label loadLanguagesTip;
-		private System.Windows.Forms.Label loadingBooksTip;
-		private System.Windows.Forms.ListView booksList;
-        private System.Windows.Forms.ComboBox VisualStudioSelection;
-        private System.Windows.Forms.ComboBox languageSelection;
+        private Button loadBooks;
+        private Button loadLanguages;
+        private TextBox cacheDirectory;
+        private Button browseDirectory;
+        private ProgressBar downloadProgress;
+        private Label startupTip;
+        private Button downloadBooks;
+        private Label loadLanguagesTip;
+        private Label loadingBooksTip;
+        private ListView booksList;
+        private ComboBox VisualStudioSelection;
+        private ComboBox languageSelection;
     }
 }
 

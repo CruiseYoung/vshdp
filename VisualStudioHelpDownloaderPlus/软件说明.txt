@@ -1,15 +1,20 @@
 ﻿软件名称：  Visual Studio Help Downloader Plus
 原 名 称：  Visual Studio 2012/2013/2015 Help Downloader
-原 官 网：  http://vshd.codeplex.com/
+原 官 网：  https://github.com/nickdalt/VSHD
 软件版本：  5.0.0.0 Beta
-基础版本：  1.2.0.0 Beta
+基础版本：  1.3.1.0 Beta
 软件著作人：NickDal，Alexander Kozlenko
 软件修改人：Cruise Young
 数据来源：  http://services.mtps.microsoft.com/ServiceAPI/catalogs/
 源代码托管: https://github.com/CruiseYoung/vshdp
 QQ交流群:   8035490
 
-修改内容：  
+修改内容：
+  v5.0.1.0(2017.04.22日)更新内容
+    1、增加对dev15(Visual Studio 2017)版本的支持；
+    2、由于微软官方删除了Visual Studio 2010版本的索引列表，该版本对dev10无效，但如果微软官方恢复索引，该软件将自动支持；
+    3、修复在Win10无法获取下载列表的bug；
+	
   v5.0.0.0(2015.11.30日)更新内容
     1、增加对dev10(Visual Studio 2010)版本的支持，至此“Visual Studio Help Downloader Plus”支持Visual Studio 2010以及其后所有已发布的版本，理论上也支持Visual Studio未来版本的支持，为庆祝此跨越，特将版本号从5.0.0.0开始编号；
     2、由于该版本支持Visual Studio 2010版本，为了能使VS2010--“帮助”--“管理帮助设置”--“从磁盘安装内容”能识别msha文件，特统一更改msha文件命名方式，遵从"Visual Studio 2010 Help Downloader Plus" 的命名规则；

@@ -1,63 +1,62 @@
 ﻿
+using System;
+using System.Collections;
+using System.Globalization;
+
 namespace VisualStudioHelpDownloaderPlus
 {
-	using System;
-	using System.Globalization;
-    using System.Collections;
-    using System.Collections.Generic;
-
     /// <summary>
     /// The possible download states for a package
     /// </summary>
     public enum PackageState
-	{
-		/// <summary>
-		/// The package has not been downloaded yet
-		/// </summary>
-		NotDownloaded, 
+    {
+        /// <summary>
+        /// The package has not been downloaded yet
+        /// </summary>
+        NotDownloaded,
 
-		/// <summary>
-		/// The package has been previously downloaded but is now out of date
-		/// </summary>
-		OutOfDate, 
+        /// <summary>
+        /// The package has been previously downloaded but is now out of date
+        /// </summary>
+        OutOfDate,
 
-		/// <summary>
-		/// The package has been downloaded and is up to date
-		/// </summary>
-		Ready
-	}
+        /// <summary>
+        /// The package has been downloaded and is up to date
+        /// </summary>
+        Ready
+    }
 
-	/// <summary>
-	///     Represents an MSDN package
-	/// </summary>
-	internal sealed class Package : IEquatable<Package>, IComparable<Package>
+    /// <summary>
+    ///     Represents an MSDN package
+    /// </summary>
+    internal sealed class Package : IEquatable<Package>, IComparable<Package>
     {
         /// <summary>
         /// Gets or sets the packageType.
         /// </summary>
         public string PackageType
-		{
-			get;
-			set;
-		}
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the packageFormat
         /// </summary>
         public string PackageFormat
-		{
-			get;
-			set;
-		}
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the name
         /// </summary>
         public string Name
-		{
-			get;
-			set;
-		}
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the deployed
@@ -72,37 +71,37 @@ namespace VisualStudioHelpDownloaderPlus
         /// Gets or sets the deployed
         /// </summary>
         public string Deployed
-		{
-			get;
-			set;
-		}
+        {
+            get;
+            set;
+        }
 
         /// <summary>
-		/// Gets or sets the last-modified
-		/// </summary>
-		public DateTime LastModified
-		{
-			get;
-			set;
-		}
+        /// Gets or sets the last-modified
+        /// </summary>
+        public DateTime LastModified
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the package-etag
         /// </summary>
         public string PackageEtag
-		{
-			get;
-			set;
-		}
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the current-link
         /// </summary>
         public string CurrentLink
-		{
-			get;
-			set;
-		}
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the current-link
@@ -117,19 +116,19 @@ namespace VisualStudioHelpDownloaderPlus
         ///  Gets or sets the package-size-bytes
         /// </summary>
         public long PackageSizeBytes
-		{
-			get;
-			set;
-		}
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the package-size-bytes-uncompressed
         /// </summary>
         public long PackageSizeBytesUncompressed
-		{
-			get;
-			set;
-		}
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the package-constituent-link
@@ -145,9 +144,9 @@ namespace VisualStudioHelpDownloaderPlus
         /// </summary>
         public string PackageConstituentLink
         {
-			get;
-			set;
-		}
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the package-constituent-link
@@ -171,36 +170,31 @@ namespace VisualStudioHelpDownloaderPlus
         /// Gets or sets the state.
         /// </summary>
         public PackageState State
-		{
-			get;
-			set;
-		}
-
-		/// <summary>
-		/// Create a file name
-		/// </summary>
-		/// <returns>
-		/// A string containing the file name
-		/// </returns>
-        public string CreateFileName()
         {
-            string fileName = null;
-            if(PackageEtag != null)
-                fileName = string.Format(CultureInfo.InvariantCulture, "{0}({1}).cab", Name, PackageEtag);
-            else
-                fileName = string.Format(CultureInfo.InvariantCulture, "{0}.cab", Name);
-            return fileName;
+            get;
+            set;
         }
 
-		/// <summary>
-		/// Returns a string representing the object
-		/// </summary>
-		/// <returns>
-		/// String representing the object
-		/// </returns>
-		public override string ToString()
-		{
-			return CurrentLinkContext /*?? "NULL"*/;
+        /// <summary>
+        /// Create a file name
+        /// </summary>
+        /// <returns>
+        /// A string containing the file name
+        /// </returns>
+        public string CreateFileName()
+        {
+            return PackageEtag != null ? string.Format(CultureInfo.InvariantCulture, "{0}({1}).cab", Name, PackageEtag) : string.Format(CultureInfo.InvariantCulture, "{0}.cab", Name);
+        }
+
+        /// <summary>
+        /// Returns a string representing the object
+        /// </summary>
+        /// <returns>
+        /// String representing the object
+        /// </returns>
+        public override string ToString()
+        {
+            return CurrentLinkContext /*?? "NULL"*/;
         }
 
         public bool Equals(Package other)
@@ -213,30 +207,30 @@ namespace VisualStudioHelpDownloaderPlus
 
         public int CompareTo(Package other)
         {
-            int val = 0;
+            int val;
             if (null == other)
             {
                 val = 1;
                 return val;
             }
 
-            int idx_this = Name.LastIndexOf('_');
-            int idx_other = other.Name.LastIndexOf('_');
+            int idxThis = Name.LastIndexOf('_');
+            int idxOther = other.Name.LastIndexOf('_');
 
-            if (idx_this == -1 || idx_other == -1)
-                val = string.Compare(Name, other.Name, true);
+            if (idxThis == -1 || idxOther == -1)
+                val = String.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
                 //val = Name.CompareTo(other.Name);
-            else 
+            else
             {
-                int pkgNo_this = 0;
-                int pkgNo_other = 0;
-                bool result_this = Int32.TryParse(Name.Substring(idx_this + 1), out pkgNo_this);
-                bool result_other = Int32.TryParse(other.Name.Substring(idx_other + 1), out pkgNo_other);
+                int pkgNoThis;
+                int pkgNoOther;
+                bool resultThis = Int32.TryParse(Name.Substring(idxThis + 1), out pkgNoThis);
+                bool resultOther = Int32.TryParse(other.Name.Substring(idxOther + 1), out pkgNoOther);
 
-                if(!result_this || !result_other)
-                    val = string.Compare(Name, other.Name, true);
-                else if ((val = string.Compare(Name.Substring(0, idx_this), other.Name.Substring(0, idx_other), true)) == 0
-                    && (val = Comparer.Default.Compare(pkgNo_this, pkgNo_other)) == 0)
+                if (!resultThis || !resultOther)
+                    val = String.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+                else if ((val = String.Compare(Name.Substring(0, idxThis), other.Name.Substring(0, idxOther), StringComparison.OrdinalIgnoreCase)) == 0
+                    && (val = Comparer.Default.Compare(pkgNoThis, pkgNoOther)) == 0)
                 { }
             }
 

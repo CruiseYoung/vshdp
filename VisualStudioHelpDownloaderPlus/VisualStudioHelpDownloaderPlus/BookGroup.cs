@@ -1,9 +1,9 @@
-﻿namespace VisualStudioHelpDownloaderPlus
-{
-    using System;
-	using System.Globalization;
-    using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 
+namespace VisualStudioHelpDownloaderPlus
+{
     /// <summary>
     ///     Represents an MSDN book-group
     /// </summary>
@@ -36,14 +36,14 @@
             set;
         }
 
-		/// <summary>
-		///     Gets or sets the books associated with the book group
-		/// </summary>
-		public ICollection<Book> Books
-		{
-			get;
-			set;
-		}
+        /// <summary>
+        ///     Gets or sets the books associated with the book group
+        /// </summary>
+        public ICollection<Book> Books
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Returns a string representing the object
@@ -74,7 +74,7 @@
         public string CreateFileName()
         {
             string retval = null;
-            foreach(var book in Books)
+            foreach (var book in Books)
             {
                 if (book.Locale.ToLowerInvariant() != "en-us")
                 {
@@ -83,9 +83,7 @@
                 }
             }
 
-            if (retval==null)
-                retval = string.Format(CultureInfo.InvariantCulture, "product-{0}.html", Id);
-            return retval;
+            return retval ?? (string.Format(CultureInfo.InvariantCulture, "product-{0}.html", Id));
         }
 
         public bool Equals(BookGroup other)
@@ -103,7 +101,7 @@
                 return 1;
             }
 
-            return string.Compare(Name, other.Name, true);
+            return String.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
             //return Name.CompareTo(other.Name); ;
         }
     }

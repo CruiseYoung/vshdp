@@ -1,12 +1,11 @@
-﻿namespace VisualStudioHelpDownloaderPlus
-{
-    using System;
-    using System.Globalization;
+﻿using System;
 
+namespace VisualStudioHelpDownloaderPlus
+{
     /// <summary>
     ///     Represents an MSDN path
     /// </summary>
-    internal sealed class MSDNPath : IComparable<MSDNPath>
+    internal sealed class MsdnPath : IComparable<MsdnPath>
     {
         /// <summary>
         ///     Gets or sets the languages.
@@ -73,14 +72,14 @@
             return Name /*?? "NULL"*/;
         }
 
-        public int CompareTo(MSDNPath other)
+        public int CompareTo(MsdnPath other)
         {
             if (null == other)
             {
-                return 1;
+            return 1;
             }
 
-            return string.Compare(SkuName, other.SkuName, true);
+            return String.Compare(SkuName, other.SkuName, StringComparison.OrdinalIgnoreCase);
             //return SkuName.CompareTo(other.SkuName);
         }
 

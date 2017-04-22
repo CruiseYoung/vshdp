@@ -1,20 +1,20 @@
-﻿namespace VisualStudioHelpDownloaderPlus
-{
-	using System;
-	using System.Collections.Generic;
-	using System.Globalization;
-	using System.IO;
-	using System.Linq;
-	using System.Xml;
-	using System.Xml.Linq;
-    using System.Diagnostics.Contracts;
-    using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 
+namespace VisualStudioHelpDownloaderPlus
+{
     /// <summary>
     ///     Helper class for parsing and creating documents with help indexes.
     /// </summary>
     internal static class HelpIndexManager
-	{
+    {
         /// <summary>
         /// Find the available locales for the help collections
         /// </summary>
@@ -33,57 +33,70 @@
         /// <exception cref="InvalidOperationException">
         /// If there was a error processing the xml data
         /// </exception>
-        public static ICollection<Catalog> LoadCatalogs( byte[] data )
-		{
-			if ( data == null )
-			{
-				throw new ArgumentNullException( "data" );
-			}
+        public static ICollection<Catalog> LoadCatalogs(byte[] data)
+        {
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
 
-			XDocument document;
+            XDocument document;
             List<Catalog> result = new List<Catalog>();
 
-			using ( MemoryStream stream = new MemoryStream( data ) )
-			{
-				document = XDocument.Load( stream );
-			}
+            using (MemoryStream stream = new MemoryStream(data))
+            {
+                document = XDocument.Load(stream);
+            }
 
-			if ( document.Root != null )
-			{
-				IEnumerable<XElement> query =
-					document.Root.Elements()
-                            .Where( x => x.GetClassName() == "catalogs")
-							.Take( 1 )
-							.Single()
-							.Elements()
-                            .Where( x => x.GetClassName() == "catalog-list")
-							.Take( 1 )
-							.Single()
-							.Elements()
-                            .Where( x => x.GetClassName() == "catalog");
-				result.AddRange(
-					query.Select(
-						x =>
+            if (document.Root != null)
+            {
+                IEnumerable<XElement> query =
+                    document.Root.Elements()
+                            /*
+                                    .Where(x => x.GetClassName() == "catalogs")
+                                    .Take(1)
+                                    .Single()
+                                    .Elements()
+                                    .Where(x => x.GetClassName() == "catalog-list")
+                                    .Take(1)
+                                    .Single()
+                                    .Elements()
+                                    .Where(x => x.GetClassName() == "catalog");
+                        */
+                            .Where(x => x.GetClassName()?.Equals("catalogs", StringComparison.OrdinalIgnoreCase) ?? false)
+                            .Take(1)
+                            .Single()
+                            .Elements()
+                            .Where(x => x.GetClassName()?.Equals("catalog-list", StringComparison.OrdinalIgnoreCase) ?? false)
+                            .Take(1)
+                            .Single()
+                            .Elements()
+                            .Where(x => x.GetClassName()?.Equals("catalog", StringComparison.OrdinalIgnoreCase) ?? false);
+
+
+                result.AddRange(
+                    query.Select(
+                        x =>
                         new Catalog
-						{
+                        {
                             Name = x.GetChildClassValue("name"),
                             Description = x.GetChildClassValue("description"),
                             CatalogLink = x.GetChildClassAttributeValue("catalog-link", "href")
-						} ) );
+                        }));
             }
-			else
-			{
-				throw new XmlException("Catalog Listing");
-			}
+            else
+            {
+                throw new XmlException("Catalog Listing");
+            }
 
-			return result;
-		}
+            return result;
+        }
 
         public static ICollection<CatalogLocale> LoadLocales(byte[] data)
         {
             if (data == null)
             {
-                throw new ArgumentNullException("data");
+                throw new ArgumentNullException(nameof(data));
             }
 
             List<CatalogLocale> result = new List<CatalogLocale>();
@@ -98,15 +111,27 @@
             {
                 IEnumerable<XElement> query =
                     document.Root.Elements()
-                            .Where(x => x.GetClassName() == "catalogLocales")
+                            /*
+                                    .Where(x => x.GetClassName() == "catalogLocales")
+                                    .Take(1)
+                                    .Single()
+                                    .Elements()
+                                    .Where(x => x.GetClassName() == "catalog-locale-list")
+                                    .Take(1)
+                                    .Single()
+                                    .Elements()
+                                    .Where(x => x.GetClassName() == "catalog-locale");
+                                    */
+                            .Where(x => x.GetClassName()?.Equals("catalogLocales", StringComparison.OrdinalIgnoreCase) ?? false)
                             .Take(1)
                             .Single()
                             .Elements()
-                            .Where(x => x.GetClassName() == "catalog-locale-list")
+                            .Where(x => x.GetClassName()?.Equals("catalog-locale-list", StringComparison.OrdinalIgnoreCase) ?? false)
                             .Take(1)
                             .Single()
                             .Elements()
-                            .Where(x => x.GetClassName() == "catalog-locale");
+                            .Where(x => x.GetClassName()?.Equals("catalog-locale", StringComparison.OrdinalIgnoreCase) ?? false);
+
                 result.AddRange(
                     query.Select(
                         x =>
@@ -128,6 +153,7 @@
         /// <summary>
         /// Find the available book groups, books, and packages for the selected language
         /// </summary>
+        /// <param name="catalog"></param>
         /// <param name="data">
         /// The page data downloaded containing the book data
         /// </param>
@@ -143,59 +169,71 @@
         /// <exception cref="InvalidOperationException">
         /// If there was a error processing the xml data
         /// </exception>
-        public static ICollection<BookGroup> LoadBooks(Catalog catalog, byte[] data )
-		{
-			if ( data == null )
-			{
-				throw new ArgumentNullException( "data" );
-			}
+        public static ICollection<BookGroup> LoadBooks(Catalog catalog, byte[] data)
+        {
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
 
             XDocument document;
             List<BookGroup> result = new List<BookGroup>();
 
-			using ( MemoryStream stream = new MemoryStream( data ) )
-			{
-				document = XDocument.Load( stream );
-			}
-            
-			if ( document.Root != null )
-			{
-				IEnumerable<XElement> groups =
-					document.Root.Elements()
-							.Where( x => x.GetClassName() == "book-list")
-							.Take( 1 )
-							.Single()
-							.Elements()
-							.Where( x => x.GetClassName() == "book-groups")
-							.Take( 1 )
-							.Single()
-							.Elements()
-							.Where( x => x.GetClassName() == "book-group");
-				foreach ( XElement group in groups )
-				{
-					BookGroup bookGroup = new BookGroup
-					{
-						Id = group.GetChildClassValue("id"),
-						Name = group.GetChildClassValue("name"),
+            using (MemoryStream stream = new MemoryStream(data))
+            {
+                document = XDocument.Load(stream);
+            }
+
+            if (document.Root != null)
+            {
+                IEnumerable<XElement> groups =
+                    document.Root.Elements()
+                            /*
+                            .Where(x => x.GetClassName() == "book-list")
+                            .Take(1)
+                            .Single()
+                            .Elements()
+                            .Where(x => x.GetClassName() == "book-groups")
+                            .Take(1)
+                            .Single()
+                            .Elements()
+                            .Where(x => x.GetClassName() == "book-group");
+                            */
+                            .Where(x => x.GetClassName()?.Equals("book-list", StringComparison.OrdinalIgnoreCase) ?? false)
+                            .Take(1)
+                            .Single()
+                            .Elements()
+                            .Where(x => x.GetClassName()?.Equals("book-groups", StringComparison.OrdinalIgnoreCase) ?? false)
+                            .Take(1)
+                            .Single()
+                            .Elements()
+                            .Where(x => x.GetClassName()?.Equals("book-group", StringComparison.OrdinalIgnoreCase) ?? false);
+
+                foreach (XElement group in groups)
+                {
+                    BookGroup bookGroup = new BookGroup
+                    {
+                        Id = group.GetChildClassValue("id"),
+                        Name = group.GetChildClassValue("name"),
                         Vendor = group.GetChildClassValue("vendor"),
-						Books = new List<Book>()
-					};
+                        Books = new List<Book>()
+                    };
 
                     if (catalog.Name == "dev10")
                     {
                         var parts = bookGroup.Name.Split('_');
-                        string Name = parts[0];
-                        if(Name == "Microsoft BizTalk Server 2010"
-                            || Name == "Kinect for Windows"
-                            || Name == "MS Office 2010"
-                            || Name == "SharePoint Products and Technologies")
-                            Name = ".NET Development";
-                        else if (Name == "SQL Server \"Denali\"")
-                            Name = "SQL Server 2012";
-                        else if (Name == "SQL Server 2014 Books Online")
-                            Name = "SQL Server 2014";
+                        string name = parts[0];
+                        if (name == "Microsoft BizTalk Server 2010"
+                            || name == "Kinect for Windows"
+                            || name == "MS Office 2010"
+                            || name == "SharePoint Products and Technologies")
+                            name = ".NET Development";
+                        else if (name == "SQL Server \"Denali\"")
+                            name = "SQL Server 2012";
+                        else if (name == "SQL Server 2014 Books Online")
+                            name = "SQL Server 2014";
 
-                        bookGroup.Name = Name;
+                        bookGroup.Name = name;
                     }
 
                     if (catalog.Name == "dev10")
@@ -215,11 +253,12 @@
                             result.Add(bookGroup);
                     }
                     else
-                        result.Add( bookGroup );
+                        result.Add(bookGroup);
 
-					IEnumerable<XElement> books = group.Elements().Where( x => x.GetClassName() == "book");
-					foreach ( XElement book in books )
-					{
+                    //IEnumerable<XElement> books = group.Elements().Where(x => x.GetClassName() == "book");
+                    IEnumerable<XElement> books = group.Elements().Where(x => x.GetClassName()?.Equals("book", StringComparison.OrdinalIgnoreCase) ?? false);
+                    foreach (XElement book in books)
+                    {
                         Book b = new Book
                         {
                             Id = book.GetChildClassValue("id"),
@@ -227,15 +266,15 @@
                             Name = book.GetChildClassValue("name"),
                             Description = book.GetChildClassValue("description"),
                             BrandingPackageName = book.GetChildClassValue("BrandingPackageName"),
-                            Paths = new List<MSDNPath>(),
+                            Paths = new List<MsdnPath>(),
                             PackagesBeforeContext = book.GetChildClassFirstNodeContext("packages"),
                             Packages = new List<Package>()
                         };
-                        
+
                         if (catalog.Name == "dev10")
                         {
 
-                            var localeDes = new Dictionary<string, string>()
+                            var localeDes = new Dictionary<string, string>
                             {
                                 {"fr-fr", @"français (France)"},
                                 {"pt-br", @"Português (Brasil)"},
@@ -258,23 +297,40 @@
 
                         if (catalog.Name != "dev10")
                         {
+
                             IEnumerable<XElement> paths =
-                                book.Elements()
-                                    .Where(x => x.GetClassName() == "properties")
+                                 /*
+                                  book.Elements()
+                                     .Where(x => x.GetClassName() == "properties")
+                                     .Take(1)
+                                     .Single()
+                                     .Elements()
+                                     .Where(x => x.GetClassName() == "paths")
+                                     .Take(1)
+                                     .Single()
+                                     .Elements()
+                                     .Where(x => x.GetClassName() == "path");
+                             //.Take( 1 )
+                             //.Single();
+                                     */
+                                 //XElement path =
+                                 book.Elements()
+                                    .Where(x => x.GetClassName()?.Equals("properties", StringComparison.OrdinalIgnoreCase) ?? false)
                                     .Take(1)
                                     .Single()
                                     .Elements()
-                                    .Where(x => x.GetClassName() == "paths")
+                                    .Where(x => x.GetClassName()?.Equals("paths", StringComparison.OrdinalIgnoreCase) ?? false)
                                     .Take(1)
                                     .Single()
                                     .Elements()
-                                    .Where(x => x.GetClassName() == "path");
-                            //.Take( 1 )
-                            //.Single();
+                                    .Where(x => x.GetClassName()?.Equals("path", StringComparison.OrdinalIgnoreCase) ?? false);
+                                    //.Take(1)
+                                    //.Single();
+
 
                             foreach (XElement path in paths)
                             {
-                                MSDNPath p = new MSDNPath
+                                MsdnPath p = new MsdnPath
                                 {
                                     Languages = path.GetChildClassValue("languages"),
                                     Membership = path.GetChildClassValue("membership"),
@@ -297,7 +353,7 @@
 
                                 b.Paths.Add(p);
 
-                                string bookPath = p.Name.TrimStart(new[] { '\\' });
+                                string bookPath = p.Name.TrimStart('\\');
                                 b.Category = bookPath;
                             }
                         }
@@ -324,226 +380,230 @@
         ////                        //.Elements()
         ////                        .Where(x => x.GetClassName() == "packages")
         ////                        .Take( 1 )
-								////.Single()
-								////.Elements()
-								////.Where( x => x.GetClassName() == "package");
+        ////.Single()
+        ////.Elements()
+        ////.Where( x => x.GetClassName() == "package");
         //                }
         //                //else
                         {
-                            packages = book.Elements()
-                                .Where(x => x.GetClassName() == "packages")
-                                .Take(1)
-                                .Single()
-                                .Elements()
-                                .Where(x => x.GetClassName() == "package");
+                            packages =
+                                /*
+                                book.Elements()
+                                    .Where(x => x.GetClassName() == "packages")
+                                    .Take(1)
+                                    .Single()
+                                    .Elements()
+                                    .Where(x => x.GetClassName() == "package");
+                                    */
+                                book.Elements()
+                                    .Where(x => x.GetClassName()?.Equals("packages", StringComparison.OrdinalIgnoreCase) ?? false)
+                                    .Take(1)
+                                    .Single()
+                                    .Elements()
+                                    .Where(x => x.GetClassName()?.Equals("package", StringComparison.OrdinalIgnoreCase) ?? false);
                         }
 
-                        foreach ( XElement package in packages )
-						{
-							Package pa = new Package
-						    {
+                        foreach (XElement package in packages)
+                        {
+                            Package pa = new Package
+                            {
                                 PackageType = package.GetChildClassValue("packageType"),
                                 PackageFormat = package.GetChildClassValue("packageFormat"),
-							    Name = package.GetChildClassValue("name"),
+                                Name = package.GetChildClassValue("name"),
                                 DeployedBeforeContext = package.GetChildClassBeforeContext("deployed"),
                                 Deployed = package.GetChildClassValue("deployed"),
-							    LastModified = DateTime.Parse( package.GetChildClassValue("last-modified"), CultureInfo.InvariantCulture ),
-							    PackageEtag = package.GetChildClassValue("package-etag"),
-                                CurrentLink = package.GetChildClassAttributeValue("current-link", "href" ),
+                                LastModified = DateTime.Parse(package.GetChildClassValue("last-modified"), CultureInfo.InvariantCulture),
+                                PackageEtag = package.GetChildClassValue("package-etag"),
+                                CurrentLink = package.GetChildClassAttributeValue("current-link", "href"),
                                 CurrentLinkContext = package.GetChildClassValue("current-link"),
-                                PackageSizeBytes = long.Parse( package.GetChildClassValue("package-size-bytes"), CultureInfo.InvariantCulture ),// unused
-                                PackageSizeBytesUncompressed = long.Parse( package.GetChildClassValue("package-size-bytes-uncompressed"), CultureInfo.InvariantCulture ),// unused
-                                PackageConstituentLink = package.GetChildClassAttributeValue("package-constituent-link", "href" ),
+                                PackageSizeBytes = long.Parse(package.GetChildClassValue("package-size-bytes"), CultureInfo.InvariantCulture),// unused
+                                PackageSizeBytesUncompressed = long.Parse(package.GetChildClassValue("package-size-bytes-uncompressed"), CultureInfo.InvariantCulture),// unused
+                                PackageConstituentLink = package.GetChildClassAttributeValue("package-constituent-link", "href"),
                                 ConstituentLinkBeforeContext = package.GetChildClassBeforeContext("package-constituent-link"),
                                 PackageConstituentLinkContext = package.GetChildClassValue("package-constituent-link"),
                                 ConstituentLinkAfterContext = package.GetChildClassAfterContext("package-constituent-link")
                             };
 
-                            b.Packages.Add( pa );
-						}
+                            b.Packages.Add(pa);
+                        }
 
                         bookGroup.Books.Add(b);
-					}
-				}
-			}
-			else
-			{
-				throw new XmlException( "Missing document root" );
-			}
+                    }
+                }
+            }
+            else
+            {
+                throw new XmlException("Missing document root");
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		/// <summary>
-		/// Creates main help setup index.
-		/// </summary>
-		/// <param name="bookGroups">
-		/// A collection of book groups to add to the index
-		/// </param>
-		/// <returns>
-		/// The xml document text
-		/// </returns>
-        public static string CreateSetupIndex( IEnumerable<BookGroup> bookGroups, Catalog objCatalog, CatalogLocale objLocale)
-		{
-			XDocument document = new XDocument( new XDeclaration( "1.0", "utf-8", null ), CreateElement( "html", null, null ) );
+        /// <summary>
+        /// Creates main help setup index.
+        /// </summary>
+        /// <param name="bookGroups">
+        /// A collection of book groups to add to the index
+        /// </param>
+        /// <param name="objCatalog"></param>
+        /// <param name="objLocale"></param>
+        /// <returns>
+        /// The xml document text
+        /// </returns>
+        public static string CreateSetupIndex(IEnumerable<BookGroup> bookGroups, Catalog objCatalog, CatalogLocale objLocale)
+        {
+            XDocument document = new XDocument(new XDeclaration("1.0", "utf-8", null), CreateElement("html", null, null));
 
-			XElement headElement = CreateElement( "head", null, null );
-			XElement metaDateElemet1 = CreateElement( "meta", null, null );
-            metaDateElemet1.SetAttributeValue( XName.Get( "name", string.Empty ), "ROBOTS" );
-            metaDateElemet1.SetAttributeValue( XName.Get( "content", string.Empty ), "NOINDEX, NOFOLLOW" );
+            XElement headElement = CreateElement("head", null, null);
+            XElement metaDateElemet1 = CreateElement("meta", null, null);
+            metaDateElemet1.SetAttributeValue(XName.Get("name", string.Empty), "ROBOTS");
+            metaDateElemet1.SetAttributeValue(XName.Get("content", string.Empty), "NOINDEX, NOFOLLOW");
 
-            XElement metaDateElemet2 = CreateElement( "meta", null, null );
-            metaDateElemet2.SetAttributeValue( XName.Get( "http-equiv", string.Empty ), "Content-Location" );
+            XElement metaDateElemet2 = CreateElement("meta", null, null);
+            metaDateElemet2.SetAttributeValue(XName.Get("http-equiv", string.Empty), "Content-Location");
             metaDateElemet2.SetAttributeValue(
-                    XName.Get( "content", string.Empty ),
-                    string.Format( CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/serviceapi/catalogs/{0}/{1}",
-                    objCatalog.Name.ToLowerInvariant( ), objLocale.Locale));
+                    XName.Get("content", string.Empty),
+                    string.Format(CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/serviceapi/catalogs/{0}/{1}",
+                    objCatalog.Name.ToLowerInvariant(), objLocale.Locale));
 
-            XElement linkElement = CreateElement( "link", null, null );
-            linkElement.SetAttributeValue( XName.Get( "type", string.Empty ), "text/css" );
-            linkElement.SetAttributeValue( XName.Get( "rel", string.Empty ), "stylesheet" );
+            XElement linkElement = CreateElement("link", null, null);
+            linkElement.SetAttributeValue(XName.Get("type", string.Empty), "text/css");
+            linkElement.SetAttributeValue(XName.Get("rel", string.Empty), "stylesheet");
             linkElement.SetAttributeValue(XName.Get("href", string.Empty), "../../styles/global.css");
             //linkElement.SetAttributeValue(XName.Get("href", string.Empty), "http://services.mtps.microsoft.com/serviceapi/styles/global.css");
 
-            XElement titleElement = CreateElement( "title", null, "All Book Listings" );
+            XElement titleElement = CreateElement("title", null, "All Book Listings");
 
-			headElement.Add( metaDateElemet1 );
-            headElement.Add( metaDateElemet2 );
-            headElement.Add( linkElement );
-            headElement.Add( titleElement );
+            headElement.Add(metaDateElemet1);
+            headElement.Add(metaDateElemet2);
+            headElement.Add(linkElement);
+            headElement.Add(titleElement);
 
-			XElement bodyElement = CreateElement( "body", "book-list", null );
-			XElement detailsElement = CreateElement( "div", "details", null );
+            XElement bodyElement = CreateElement("body", "book-list", null);
+            XElement detailsElement = CreateElement("div", "details", null);
 
-            XElement catalogLocaleLinkElement = CreateElement( "a", "catalog-locale-link", "Catalog locales" );
+            XElement catalogLocaleLinkElement = CreateElement("a", "catalog-locale-link", "Catalog locales");
             catalogLocaleLinkElement.SetAttributeValue(XName.Get("href", string.Empty),
                 string.Format(CultureInfo.InvariantCulture, @"../../catalogs/{0}", objCatalog.Name.ToLowerInvariant()));
             //catalogLocaleLinkElement.SetAttributeValue(XName.Get("href", string.Empty),
             //    string.Format(CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/ServiceAPI/catalogs/{0}", objCatalog.Name.ToLowerInvariant()));
 
 
-            detailsElement.Add( catalogLocaleLinkElement );
-			
-			XElement bookgroupsElement = CreateBookGroupBooksIndex ( bookGroups, objCatalog, objLocale);
-			
-			bodyElement.Add(detailsElement, bookgroupsElement);
+            detailsElement.Add(catalogLocaleLinkElement);
+
+            XElement bookgroupsElement = CreateBookGroupBooksIndex(bookGroups, objCatalog, objLocale);
+
+            bodyElement.Add(detailsElement, bookgroupsElement);
 
             var divElement = CreateElement("div", null, null);
             divElement.SetAttributeValue(XName.Get("id", string.Empty), "GWDANG_HAS_BUILT");
             bodyElement.Add(divElement);
 
-            if ( document.Root != null )
-			{
-				document.Root.Add( headElement, bodyElement );
-			}
+            document.Root?.Add(headElement, bodyElement);
 
-			return document.ToStringWithDeclaration();
-		}
+            return document.ToStringWithDeclaration();
+        }
 
-		/// <summary>
-		/// Create book group books index.
-		/// </summary>
-		/// <param name="bookGroup">
-		/// The book group to create the index for.
-		/// </param>
-		/// <returns>
-		/// The xml document text
-		/// </returns>
-		public static XElement CreateBookGroupBooksIndex( IEnumerable<BookGroup> bookGroups, Catalog objCatalog, CatalogLocale objLocale)
-		{
-			XElement bookgroupsElement = CreateElement( "div", "book-groups", null );
+        /// <summary>
+        /// Create book group books index.
+        /// </summary>
+        /// <returns>
+        /// The xml document text
+        /// </returns>
+        public static XElement CreateBookGroupBooksIndex(IEnumerable<BookGroup> bookGroups, Catalog objCatalog, CatalogLocale objLocale)
+        {
+            XElement bookgroupsElement = CreateElement("div", "book-groups", null);
 
-            (bookGroups as List<BookGroup>).Sort();
+            var groups = bookGroups as List<BookGroup>;
+            groups?.Sort();
             foreach (BookGroup bookGroup in bookGroups)
             {
-                XElement bookgroupElement = CreateElement( "div", "book-group", null );
+                XElement bookgroupElement = CreateElement("div", "book-group", null);
                 bookgroupElement.Add(
-                    CreateElement( "span", "id", bookGroup.Id ),
-                    CreateElement( "span", "name", bookGroup.Name ),
-                    CreateElement( "span", "vendor", bookGroup.Vendor )
+                    CreateElement("span", "id", bookGroup.Id),
+                    CreateElement("span", "name", bookGroup.Name),
+                    CreateElement("span", "vendor", bookGroup.Vendor)
                     );
 
-                (bookGroup.Books as List<Book>).Sort();
+                var books = bookGroup.Books as List<Book>;
+                books?.Sort();
                 foreach (Book book in bookGroup.Books)
                 {
-                    if ( !book.Wanted )
+                    if (!book.Wanted)
                     {
                         continue;
                     }
-						
-                    bookgroupElement.Add( CreateBookPackagesIndex( book, objCatalog, objLocale) );
+
+                    bookgroupElement.Add(CreateBookPackagesIndex(book, objCatalog, objLocale));
                 }
 
                 bookgroupsElement.Add(bookgroupElement);
             }
-			
-			return bookgroupsElement;
-		}
-		
-		/// <summary>
-		/// Create book packages index.
-		/// </summary>
-		/// <param name="bookGroup">
-		/// The book Group associated with the book.
-		/// </param>
-		/// <param name="book">
-		/// The book associated with the packages
-		/// </param>
-		/// <returns>
-		/// The xml document text
-		/// </returns>
-		public static XElement CreateBookPackagesIndex( Book book, Catalog objCatalog, CatalogLocale objLocale)
-		{
-			XElement bookElement = CreateElement( "div", "book", null );
-								
-			XElement propertiesElement = CreateElement( "div", "properties", null );
-            if(objCatalog.Name != "dev10")
+
+            return bookgroupsElement;
+        }
+
+        /// <summary>
+        /// Create book packages index.
+        /// </summary>
+        /// <param name="book">
+        /// The book associated with the packages
+        /// </param>
+        /// <param name="objCatalog"></param>
+        /// <param name="objLocale"></param>
+        /// <returns>
+        /// The xml document text
+        /// </returns>
+        public static XElement CreateBookPackagesIndex(Book book, Catalog objCatalog, CatalogLocale objLocale)
+        {
+            XElement bookElement = CreateElement("div", "book", null);
+
+            XElement propertiesElement = CreateElement("div", "properties", null);
+            if (objCatalog.Name != "dev10")
             {
-                (book.Paths as List<MSDNPath>).Sort();
-                XElement pathsElement = CreateElement( "div", "paths", null );
-			    foreach (MSDNPath path in book.Paths)
-			    {
-				    XElement pathElement = CreateElement("div", "path", null);
+                var msdnPaths = book.Paths as List<MsdnPath>;
+                msdnPaths?.Sort();
+                XElement pathsElement = CreateElement("div", "paths", null);
+                foreach (MsdnPath path in book.Paths)
+                {
+                    XElement pathElement = CreateElement("div", "path", null);
 
-				    pathElement.Add(
-					    CreateElement( "span", "languages", path.Languages ),
-					    CreateElement( "span", "membership", path.Membership ), 
-					    CreateElement( "span", "name", path.Name ), 
-					    CreateElement( "span", "priority", path.Priority.ToString() ),
-					    CreateElement( "span", "skuId", path.SkuId.ToString() ),
-					    CreateElement( "span", "skuName", path.SkuName )
-					    );
+                    pathElement.Add(
+                        CreateElement("span", "languages", path.Languages),
+                        CreateElement("span", "membership", path.Membership),
+                        CreateElement("span", "name", path.Name),
+                        CreateElement("span", "priority", path.Priority.ToString()),
+                        CreateElement("span", "skuId", path.SkuId.ToString()),
+                        CreateElement("span", "skuName", path.SkuName)
+                        );
 
-				    pathsElement.Add( pathElement );
-			    }
-			    propertiesElement.Add( pathsElement );
+                    pathsElement.Add(pathElement);
+                }
+                propertiesElement.Add(pathsElement);
             }
 
-			XElement packageListElement = CreateElement( "div", "packages", null );
+            XElement packageListElement = CreateElement("div", "packages", null);
             //packageListElement.Add(new XText(book.PackagesBeforeContext));
 
-            (book.Packages as List<Package>).Sort();
-            foreach ( Package package in book.Packages )
-			{
-                XElement packageElement = CreateElement( "div", "package", null );
-                string lastModifiedFmt;
-                if ((package.LastModified.Millisecond % 10) == 0)
-                    lastModifiedFmt = "yyyy-MM-ddThh:mm:ss.ffZ";
-                else
-                    lastModifiedFmt = "yyyy-MM-ddThh:mm:ss.fffZ";
+            var packages = book.Packages as List<Package>;
+            packages?.Sort();
+            foreach (Package package in book.Packages)
+            {
+                XElement packageElement = CreateElement("div", "package", null);
+                var lastModifiedFmt = (package.LastModified.Millisecond % 10) == 0 ? "yyyy-MM-ddThh:mm:ss.ffZ" : "yyyy-MM-ddThh:mm:ss.fffZ";
 
                 XElement lastModified = CreateElement("span", "last-modified", package.LastModified.ToUniversalTime().ToString(lastModifiedFmt, CultureInfo.InvariantCulture));
                 //XElement lastModified = new XElement("span", package.LastModified);
 
-                string curlink = string.Format( CultureInfo.InvariantCulture, "packages/{0}", package.CreateFileName());
-				if ( package.Name.ToLowerInvariant().Contains( @"en-us" ) )
-					curlink = string.Format( CultureInfo.InvariantCulture, "packages/en-us/{0}", package.CreateFileName());
-				else if ( package.Name.ToLowerInvariant().Contains(objLocale.Locale.ToLowerInvariant() ) )
-					curlink = string.Format( CultureInfo.InvariantCulture, "packages/{0}/{1}", objLocale.Locale.ToLowerInvariant() , package.CreateFileName());
-				else
-					curlink = string.Format( CultureInfo.InvariantCulture, "packages/{0}", package.CreateFileName());
+                string curlink;
+                if (package.Name.ToLowerInvariant().Contains(@"en-us"))
+                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/en-us/{0}", package.CreateFileName());
+                else if (package.Name.ToLowerInvariant().Contains(objLocale.Locale.ToLowerInvariant()))
+                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}/{1}", objLocale.Locale.ToLowerInvariant(), package.CreateFileName());
+                else
+                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}", package.CreateFileName());
 
-                string constituentLink = string.Format(CultureInfo.InvariantCulture, "packages/{0}", package.Name);
+                string constituentLink;
                 if (package.Name.ToLowerInvariant().Contains(@"en-us"))
                     constituentLink = string.Format(CultureInfo.InvariantCulture, "packages/en-us/{0}", package.Name);
                 else if (package.Name.ToLowerInvariant().Contains(objLocale.Locale.ToLowerInvariant()))
@@ -571,25 +631,25 @@
                     CreateElement("span", "package-size-bytes-uncompressed", package.PackageSizeBytesUncompressed.ToString()),
                     //new XText(package.ConstituentLinkBeforeContext),
                     constituentLinkElement
-                    //,
-                    //new XText(package.ConstituentLinkAfterContext)
+                //,
+                //new XText(package.ConstituentLinkAfterContext)
                 );
 
-                packageListElement.Add( packageElement );
-			}
-			
-			bookElement.Add(
-				CreateElement( "span", "id", book.Id ),
-				CreateElement( "span", "locale", book.Locale ),
-				CreateElement( "span", "name", book.Name ),
-				CreateElement( "span", "description", book.Description ),
-				CreateElement( "span", "BrandingPackageName", book.BrandingPackageName ),
-				propertiesElement,
-				packageListElement
-				);
-				
-			return bookElement;
-		}
+                packageListElement.Add(packageElement);
+            }
+
+            bookElement.Add(
+                CreateElement("span", "id", book.Id),
+                CreateElement("span", "locale", book.Locale),
+                CreateElement("span", "name", book.Name),
+                CreateElement("span", "description", book.Description),
+                CreateElement("span", "BrandingPackageName", book.BrandingPackageName),
+                propertiesElement,
+                packageListElement
+                );
+
+            return bookElement;
+        }
 
         /// <summary>
         /// Creates main help setup index.
@@ -597,6 +657,9 @@
         /// <param name="bookGroups">
         /// A collection of book groups to add to the index
         /// </param>
+        /// <param name="objCatalog"></param>
+        /// <param name="objLocale"></param>
+        /// <param name="vsDirectory"></param>
         /// <returns>
         /// The xml document text
         /// </returns>
@@ -647,7 +710,8 @@
             //    string.Format(CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/ServiceAPI/catalogs/{0}", objCatalog.Name.ToLowerInvariant()));
             detailsElement.Add(catalogLocaleLinkElement);
 
-            (bookGroups as List<BookGroup>).Sort();
+            var groups = bookGroups as List<BookGroup>;
+            groups?.Sort();
             foreach (var product in bookGroups)
             {
                 string xmlname = Path.Combine(vsDirectory, product.CreateFileName());
@@ -665,7 +729,7 @@
 
                 string productLickStr = product.CreateFileName();
                 var productLick = CreateElement("a", "product-link", product.Name);
-                productLick.SetAttributeValue( XName.Get("href", string.Empty), productLickStr);
+                productLick.SetAttributeValue(XName.Get("href", string.Empty), productLickStr);
 
                 //descElement.Add(
                 //    iconProductElement,
@@ -688,10 +752,7 @@
             divElement.SetAttributeValue(XName.Get("id", string.Empty), "GWDANG_HAS_BUILT");
             bodyElement.Add(divElement);
 
-            if (document.Root != null)
-            {
-                document.Root.Add(headElement, bodyElement);
-            }
+            document.Root?.Add(headElement, bodyElement);
 
             return document.ToStringWithDeclaration();
         }
@@ -702,6 +763,9 @@
         /// <param name="bookGroup">
         /// The book group to create the index for.
         /// </param>
+        /// <param name="objCatalog"></param>
+        /// <param name="objLocale"></param>
+        /// <param name="vsDirectory"></param>
         /// <returns>
         /// The xml document text
         /// </returns>
@@ -779,7 +843,8 @@
             );
             bookListElement.Add(bookListLinkElement);
 
-            (bookGroup.Books as List<Book>).Sort();
+            var books = bookGroup.Books as List<Book>;
+            books?.Sort();
             foreach (Book book in bookGroup.Books)
             {
                 string xmlname = Path.Combine(vsDirectory, book.CreateFileName());
@@ -825,10 +890,7 @@
                 detailsElement,
                 bookListElement);
 
-            if (document.Root != null)
-            {
-                document.Root.Add(headElement, bodyElement);
-            }
+            document.Root?.Add(headElement, bodyElement);
 
             return document.ToStringWithDeclaration();
         }
@@ -842,6 +904,7 @@
         /// <param name="book">
         /// The book associated with the packages
         /// </param>
+        /// <param name="objLocale"></param>
         /// <returns>
         /// The xml document text
         /// </returns>
@@ -900,21 +963,17 @@
             //var productGroupsLinkElement = CreateElement("a", "product-group-link", bookGroup.Name);
             //productGroupsLinkElement.SetAttributeValue(XName.Get("href", string.Empty), productGroupsLink);
 
-            var brandingPackageElement1 = CreateElement("a", "branding-package-link", Downloader.BRANDING_PACKAGE_NAME1);
+            var brandingPackageElement1 = CreateElement("a", "branding-package-link", Downloader.BrandingPackageName1);
             brandingPackageElement1.SetAttributeValue(
                 XName.Get("href", string.Empty),
-                string.Format(CultureInfo.InvariantCulture, @"packages\{0}.cab", Downloader.BRANDING_PACKAGE_NAME1));
+                string.Format(CultureInfo.InvariantCulture, @"packages\{0}.cab", Downloader.BrandingPackageName1));
 
-            var brandingPackageElement2 = CreateElement("a", "branding-package-link", Downloader.BRANDING_PACKAGE_NAME2);
+            var brandingPackageElement2 = CreateElement("a", "branding-package-link", Downloader.BrandingPackageName2);
             brandingPackageElement2.SetAttributeValue(
                 XName.Get("href", string.Empty),
-                string.Format(CultureInfo.InvariantCulture, @"packages\{0}.cab", Downloader.BRANDING_PACKAGE_NAME2));
+                string.Format(CultureInfo.InvariantCulture, @"packages\{0}.cab", Downloader.BrandingPackageName2));
 
-            string lastModifiedFmtBook;
-            if ((book.LastModified.Millisecond % 10) == 0)
-                lastModifiedFmtBook = "yyyy-MM-ddThh:mm:ss.ffZ";
-            else
-                lastModifiedFmtBook = "yyyy-MM-ddThh:mm:ss.fffZ";
+            var lastModifiedFmtBook = (book.LastModified.Millisecond % 10) == 0 ? "yyyy-MM-ddThh:mm:ss.ffZ" : "yyyy-MM-ddThh:mm:ss.fffZ";
 
             XElement bookLastModified = CreateElement("span", "last-modified", book.LastModified.ToUniversalTime().ToString(lastModifiedFmtBook, CultureInfo.InvariantCulture));
 
@@ -942,20 +1001,17 @@
             var packageListElement = CreateElement("div", "package-list", null);
             //packageListElement.Add(new XText(book.PackagesBeforeContext));
 
-            (book.Packages as List<Package>).Sort();
+            var packages = book.Packages as List<Package>;
+            packages?.Sort();
             foreach (Package package in book.Packages)
             {
                 XElement packageElement = CreateElement("div", "package", null);
-                string lastModifiedFmt;
-                if ((package.LastModified.Millisecond % 10) == 0)
-                    lastModifiedFmt = "yyyy-MM-ddThh:mm:ss.ffZ";
-                else
-                    lastModifiedFmt = "yyyy-MM-ddThh:mm:ss.fffZ";
+                var lastModifiedFmt = (package.LastModified.Millisecond % 10) == 0 ? "yyyy-MM-ddThh:mm:ss.ffZ" : "yyyy-MM-ddThh:mm:ss.fffZ";
 
                 XElement lastModified = CreateElement("span", "last-modified", package.LastModified.ToUniversalTime().ToString(lastModifiedFmt, CultureInfo.InvariantCulture));
                 //XElement lastModified = new XElement("span", package.LastModified);
 
-                string curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}", package.CreateFileName());
+                string curlink;
                 if (package.Name.ToLowerInvariant().Contains(@"en-us"))
                     curlink = string.Format(CultureInfo.InvariantCulture, "packages/en-us/{0}", package.CreateFileName());
                 else if (package.Name.ToLowerInvariant().Contains(objLocale.Locale.ToLowerInvariant()))
@@ -963,7 +1019,7 @@
                 else
                     curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}", package.CreateFileName());
 
-                string constituentLink = string.Format(CultureInfo.InvariantCulture, "packages/{0}", package.Name);
+                string constituentLink;
                 if (package.Name.ToLowerInvariant().Contains(@"en-us"))
                     constituentLink = string.Format(CultureInfo.InvariantCulture, "packages/en-us/{0}", package.Name);
                 else if (package.Name.ToLowerInvariant().Contains(objLocale.Locale.ToLowerInvariant()))
@@ -989,8 +1045,8 @@
                     CreateElement("span", "package-size-bytes-uncompressed", package.PackageSizeBytesUncompressed.ToString()),
                     //new XText(package.ConstituentLinkBeforeContext),
                     constituentLinkElement
-                    //,
-                    //new XText(package.ConstituentLinkAfterContext)
+                //,
+                //new XText(package.ConstituentLinkAfterContext)
                 );
 
                 packageListElement.Add(packageElement);
@@ -1006,10 +1062,7 @@
                 divElement
             );
 
-            if (document.Root != null)
-            {
-                document.Root.Add(headElement, bodyElement);
-            }
+            document.Root?.Add(headElement, bodyElement);
 
             return document.ToStringWithDeclaration();
         }
@@ -1029,86 +1082,88 @@
         /// <returns>
         /// The created element
         /// </returns>
-        private static XElement CreateElement( string name, string className, string value )
-		{
-			XElement element = new XElement( XName.Get( name, "http://www.w3.org/1999/xhtml" ) );
+        private static XElement CreateElement(string name, string className, string value)
+        {
+            XElement element = new XElement(XName.Get(name, "http://www.w3.org/1999/xhtml"));
 
-			if ( className != null )
-			{
-				element.SetAttributeValue( XName.Get( "class", string.Empty ), className );
-			}
+            if (className != null)
+            {
+                element.SetAttributeValue(XName.Get("class", string.Empty), className);
+            }
 
-			if ( value != null )
-			{
-				element.Value = value;
-			}
+            if (value != null)
+            {
+                element.Value = value;
+            }
 
-			return element;
-		}
+            return element;
+        }
 
-		/// <summary>
-		/// Get the name of the class of an xml element
-		/// </summary>
-		/// <param name="element">
-		/// The element to get the class name of
-		/// </param>
-		/// <returns>
-		/// The class name or null if there is no class name
-		/// </returns>
-		private static string GetClassName( this XElement element )
-		{
-			return GetAttributeValue( element, "class" );
-		}
+        /// <summary>
+        /// Get the name of the class of an xml element
+        /// </summary>
+        /// <param name="element">
+        /// The element to get the class name of
+        /// </param>
+        /// <returns>
+        /// The class name or null if there is no class name
+        /// </returns>
+        private static string GetClassName(this XElement element)
+        {
+            return GetAttributeValue(element, "class");
+        }
 
-		/// <summary>
-		/// The the value of an attribute of an xml element
-		/// </summary>
-		/// <param name="element">
-		/// The element to get the attribute value from
-		/// </param>
-		/// <param name="name">
-		/// The name of the attrbute to query
-		/// </param>
-		/// <returns>
-		/// The attribute value or null if the attribute was not found
-		/// </returns>
-		private static string GetAttributeValue( this XElement element, string name )
-		{
-			XAttribute attribute = element.Attribute( XName.Get( name, string.Empty ) );
+        /// <summary>
+        /// The the value of an attribute of an xml element
+        /// </summary>
+        /// <param name="element">
+        /// The element to get the attribute value from
+        /// </param>
+        /// <param name="name">
+        /// The name of the attrbute to query
+        /// </param>
+        /// <returns>
+        /// The attribute value or null if the attribute was not found
+        /// </returns>
+        private static string GetAttributeValue(this XElement element, string name)
+        {
+            XAttribute attribute = element.Attribute(XName.Get(name, string.Empty));
 
-			return attribute == null ? null : attribute.Value;
-		}
+            return attribute?.Value;
+        }
 
-		/// <summary>
-		/// Get the value of the first child element of the specified element with the class attribute that matched
-		/// the specified name
-		/// </summary>
-		/// <param name="element">
-		/// The element to get the child class value from
-		/// </param>
-		/// <param name="name">
-		/// The class name to find
-		/// </param>
-		/// <returns>
-		/// The value of the child class element
-		/// </returns>
-		/// <exception cref="InvalidOperationException">
-		/// If there was no child element with the class attribute
-		/// </exception>
-		private static string GetChildClassValue( this XElement element, string name )
-		{
+        /// <summary>
+        /// Get the value of the first child element of the specified element with the class attribute that matched
+        /// the specified name
+        /// </summary>
+        /// <param name="element">
+        /// The element to get the child class value from
+        /// </param>
+        /// <param name="name">
+        /// The class name to find
+        /// </param>
+        /// <returns>
+        /// The value of the child class element
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        /// If there was no child element with the class attribute
+        /// </exception>
+        private static string GetChildClassValue(this XElement element, string name)
+        {
             string value = string.Empty;
             try
             {
-                XElement result = element.Elements().Where(x => x.GetClassName() == name).Take(1).Single();
-                value = null != result ? result.Value : null;
+                //XElement result = element.Elements().Where(x => x.GetClassName() == name).Take(1).Single();
+                XElement result = element.Elements().Where(x => x.GetClassName()?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false).Take(1).Single();
+                value = result?.Value;
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
-			return value;
-		}
+            return value;
+        }
 
         /// <summary>
         /// Get the value of the first child element of the specified element with the class attribute that matched
@@ -1131,11 +1186,13 @@
             string value = string.Empty;
             try
             {
-                XText result = element.Elements().Where(x => x.GetClassName() == name).Take(1).Single().FirstNode as XText;
-                value = null != result ? result.Value : null;
+                //XText result = element.Elements().Where(x => x.GetClassName() == name).Take(1).Single().FirstNode as XText;
+                XText result = element.Elements().Where(x => x.GetClassName()?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false).Take(1).Single().FirstNode as XText;
+                value = result?.Value;
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
             return value;
@@ -1162,11 +1219,13 @@
             string value = string.Empty;
             try
             {
-                XText result = element.Elements().Where(x => x.GetClassName() == name).Take(1).Single().PreviousNode as XText;
-                value = null != result ? result.Value : null;
+                //XText result = element.Elements().Where(x => x.GetClassName() == name).Take(1).Single().PreviousNode as XText;
+                XText result = element.Elements().Where(x => x.GetClassName()?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false).Take(1).Single().PreviousNode as XText;
+                value = result?.Value;
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
             return value;
@@ -1193,11 +1252,13 @@
             string value = string.Empty;
             try
             {
-                XText result = element.Elements().Where(x => x.GetClassName() == name).Take(1).Single().NextNode as XText;
-                value = null != result ? result.Value : null;
+                //XText result = element.Elements().Where(x => x.GetClassName() == name).Take(1).Single().NextNode as XText;
+                XText result = element.Elements().Where(x => x.GetClassName()?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false).Take(1).Single().NextNode as XText;
+                value = result?.Value;
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                // ignored
             }
 
             return value;
@@ -1222,37 +1283,49 @@
         /// <exception cref="InvalidOperationException">
         /// If there was no child element with the class attribute
         /// </exception>
-        private static string GetChildClassAttributeValue( this XElement element, string name, string attribute )
-		{
-			XElement result = element.Elements().Where( x => x.GetClassName() == name ).Take( 1 ).Single();
+        private static string GetChildClassAttributeValue(this XElement element, string name, string attribute)
+        {
+            string value = string.Empty;
+            try
+            {
+                //XElement result = element.Elements().Where(x => x.GetClassName() == name).Take(1).Single();
+                XElement result = element.Elements().Where(x => x.GetClassName()?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false).Take(1).Single();
+                value = result?.GetAttributeValue(attribute);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
 
-			return null != result ? result.GetAttributeValue( attribute ) : null;
-		}
+            return value;
+        }
 
-		/// <summary>
-		/// XDocument extension method to get the XML text including the declaration from an XDocument
-		/// </summary>
-		/// <param name="document">
-		/// The document to get the xml text from
-		/// </param>
-		/// <returns>
-		/// The xml text for the document
-		/// </returns>
-		private static string ToStringWithDeclaration( this XDocument document )
-		{
-			return document.Declaration == null ?
-				document.ToString() :
+        /// <summary>
+        /// XDocument extension method to get the XML text including the declaration from an XDocument
+        /// </summary>
+        /// <param name="document">
+        /// The document to get the xml text from
+        /// </param>
+        /// <returns>
+        /// The xml text for the document
+        /// </returns>
+        private static string ToStringWithDeclaration(this XDocument document)
+        {
+            return document.Declaration == null ?
+                document.ToString() :
                 string.Format(CultureInfo.InvariantCulture, "{0}{1}{2}", document.Declaration.ToString(), Environment.NewLine, document.ToString(SaveOptions.None));
-		}
+        }
 
+        /*
         private static string CreateCodeFromUrl(string url)// unused
         {
-            if (null == url)
+            if (string.IsNullOrEmpty(url))
                 return null;
 
             string[] parts = url.Split('/');
 
             return parts.Length > 0 ? parts[parts.Length - 1] : null;
         }
-	}
+        */
+    }
 }

@@ -1,10 +1,9 @@
 ﻿
+using System;
+using System.Collections;
+
 namespace VisualStudioHelpDownloaderPlus
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-
     /// <summary>
     /// The catalog.
     /// </summary>
@@ -40,13 +39,7 @@ namespace VisualStudioHelpDownloaderPlus
         /// <summary>
         ///  Gets the normalized catalog name display.
         /// </summary>
-        public string DisplayName
-        {
-            get
-            {
-                return NormalizeCatalog(Name);
-            }
-        }
+        public string DisplayName => NormalizeCatalog(Name);
 
         /// <summary>
         /// Returns a string representing the object
@@ -71,8 +64,7 @@ namespace VisualStudioHelpDownloaderPlus
             Catalog personObj = obj as Catalog;
             if (personObj == null)
                 return false;
-            else
-                return Name.Equals(personObj.Name);
+            return Name.Equals(personObj.Name);
         }
 
         public bool Equals(Catalog other)
@@ -90,21 +82,21 @@ namespace VisualStudioHelpDownloaderPlus
                 return 1;
             }
 
-            int catalogNo_this = 0;
-            int catalogNo_other = 0;
-            bool result_this = false;
-            bool result_other = false;
+            int catalogNoThis = 0;
+            int catalogNoOther = 0;
+            bool resultThis = false;
+            bool resultOther = false;
 
-            if(Name.Length > 2)
-                result_this = Int32.TryParse(Name.Substring(Name.Length-2), out catalogNo_this);
+            if (Name.Length > 2)
+                resultThis = Int32.TryParse(Name.Substring(Name.Length - 2), out catalogNoThis);
             if (other.Name.Length > 2)
-                result_other = Int32.TryParse(other.Name.Substring(other.Name.Length - 2), out catalogNo_other);
+                resultOther = Int32.TryParse(other.Name.Substring(other.Name.Length - 2), out catalogNoOther);
 
-            int val = 0;
-            if (!result_this || !result_other)
-                val = string.Compare(Name, other.Name, true);
-            else if ((val = Comparer.Default.Compare(catalogNo_this, catalogNo_other)) == 0
-                && (val = string.Compare(Name.Substring(0, Name.Length - 2), other.Name.Substring(0, other.Name.Length - 2), true)) == 0)
+            int val;
+            if (!resultThis || !resultOther)
+                val = String.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+            else if ((val = Comparer.Default.Compare(catalogNoThis, catalogNoOther)) == 0
+                && (val = String.Compare(Name.Substring(0, Name.Length - 2), other.Name.Substring(0, other.Name.Length - 2), StringComparison.OrdinalIgnoreCase)) == 0)
             { }
 
             return val;
@@ -136,7 +128,7 @@ namespace VisualStudioHelpDownloaderPlus
         {
             //return value;
 
-            if (null == value)
+            if (string.IsNullOrEmpty(value))
             {
                 return string.Empty;
             }
@@ -148,8 +140,10 @@ namespace VisualStudioHelpDownloaderPlus
                 displayValue = "Visual Studio 2012";
             else if (value == "VisualStudio12")
                 displayValue = "Visual Studio 2013";
-			else if (value == "VisualStudio14" || value == "dev14")
+            else if (value == "VisualStudio14" || value == "dev14")
                 displayValue = "Visual Studio 2015";
+            else if (value == "VisualStudio15" || value == "dev15")
+                displayValue = "Visual Studio 2017";
             else
                 displayValue = value;
 

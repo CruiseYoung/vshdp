@@ -1,9 +1,8 @@
-﻿namespace VisualStudioHelpDownloaderPlus
+﻿using System;
+using System.Globalization;
+
+namespace VisualStudioHelpDownloaderPlus
 {
-    using System;
-    using System.Globalization;
-    using System.Collections.Generic;
-    
     /// <summary>
     /// The catalog-locale.
     /// </summary>
@@ -91,7 +90,7 @@
         public bool Equals(CatalogLocale other)
         {
             if (other == null)
-                return false;
+            return false;
 
             return Locale.ToLowerInvariant().Equals(other.Locale.ToLowerInvariant());
         }
@@ -100,10 +99,10 @@
         {
             if (null == other)
             {
-                return 1;
+            return 1;
             }
 
-            return string.Compare(Locale, other.Locale, true);
+            return String.Compare(Locale, other.Locale, StringComparison.OrdinalIgnoreCase);
             //return Locale.CompareTo(other.Locale); ;
         }
     }
