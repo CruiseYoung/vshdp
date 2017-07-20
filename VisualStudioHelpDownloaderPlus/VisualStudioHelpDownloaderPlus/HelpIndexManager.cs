@@ -43,6 +43,9 @@ namespace VisualStudioHelpDownloaderPlus
             XDocument document;
             List<Catalog> result = new List<Catalog>();
 
+            string str_tmp = Encoding.UTF8.GetString(data).Trim();
+            data = Encoding.UTF8.GetBytes(str_tmp);
+
             using (MemoryStream stream = new MemoryStream(data))
             {
                 document = XDocument.Load(stream);
@@ -52,37 +55,34 @@ namespace VisualStudioHelpDownloaderPlus
             {
                 IEnumerable<XElement> query =
                     document.Root.Elements()
-                            /*
-                                    .Where(x => x.GetClassName() == "catalogs")
-                                    .Take(1)
-                                    .Single()
-                                    .Elements()
-                                    .Where(x => x.GetClassName() == "catalog-list")
-                                    .Take(1)
-                                    .Single()
-                                    .Elements()
-                                    .Where(x => x.GetClassName() == "catalog");
-                        */
-                            .Where(x => x.GetClassName()?.Equals("catalogs", StringComparison.OrdinalIgnoreCase) ?? false)
-                            .Take(1)
-                            .Single()
-                            .Elements()
-                            .Where(x => x.GetClassName()?.Equals("catalog-list", StringComparison.OrdinalIgnoreCase) ?? false)
-                            .Take(1)
-                            .Single()
-                            .Elements()
-                            .Where(x => x.GetClassName()?.Equals("catalog", StringComparison.OrdinalIgnoreCase) ?? false);
+                    /*
+                    .Where(x => x.GetClassName() == "catalogs")
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName() == "catalog-list")
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName() == "catalog");
+                    */
+                    .Where(x => x.GetClassName()?.Equals("catalogs", StringComparison.OrdinalIgnoreCase) ?? false)
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName()?.Equals("catalog-list", StringComparison.OrdinalIgnoreCase) ?? false)
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName()?.Equals("catalog", StringComparison.OrdinalIgnoreCase) ?? false);
 
-
-                result.AddRange(
-                    query.Select(
-                        x =>
-                        new Catalog
-                        {
-                            Name = x.GetChildClassValue("name"),
-                            Description = x.GetChildClassValue("description"),
-                            CatalogLink = x.GetChildClassAttributeValue("catalog-link", "href")
-                        }));
+                result.AddRange(query.Select(x =>
+                    new Catalog
+                    {
+                        Name = x.GetChildClassValue("name"),
+                        Description = x.GetChildClassValue("description"),
+                        CatalogLink = x.GetChildClassAttributeValue("catalog-link", "href")
+                    }));
             }
             else
             {
@@ -102,6 +102,8 @@ namespace VisualStudioHelpDownloaderPlus
             List<CatalogLocale> result = new List<CatalogLocale>();
             XDocument document;
 
+            string str_tmp = Encoding.UTF8.GetString(data).Trim();
+            data = Encoding.UTF8.GetBytes(str_tmp);
             using (MemoryStream stream = new MemoryStream(data))
             {
                 document = XDocument.Load(stream);
@@ -111,37 +113,35 @@ namespace VisualStudioHelpDownloaderPlus
             {
                 IEnumerable<XElement> query =
                     document.Root.Elements()
-                            /*
-                                    .Where(x => x.GetClassName() == "catalogLocales")
-                                    .Take(1)
-                                    .Single()
-                                    .Elements()
-                                    .Where(x => x.GetClassName() == "catalog-locale-list")
-                                    .Take(1)
-                                    .Single()
-                                    .Elements()
-                                    .Where(x => x.GetClassName() == "catalog-locale");
-                                    */
-                            .Where(x => x.GetClassName()?.Equals("catalogLocales", StringComparison.OrdinalIgnoreCase) ?? false)
-                            .Take(1)
-                            .Single()
-                            .Elements()
-                            .Where(x => x.GetClassName()?.Equals("catalog-locale-list", StringComparison.OrdinalIgnoreCase) ?? false)
-                            .Take(1)
-                            .Single()
-                            .Elements()
-                            .Where(x => x.GetClassName()?.Equals("catalog-locale", StringComparison.OrdinalIgnoreCase) ?? false);
+                    /*
+                    .Where(x => x.GetClassName() == "catalogLocales")
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName() == "catalog-locale-list")
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName() == "catalog-locale");
+                    */
+                    .Where(x => x.GetClassName()?.Equals("catalogLocales", StringComparison.OrdinalIgnoreCase) ?? false)
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName()?.Equals("catalog-locale-list", StringComparison.OrdinalIgnoreCase) ?? false)
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName()?.Equals("catalog-locale", StringComparison.OrdinalIgnoreCase) ?? false);
 
-                result.AddRange(
-                    query.Select(
-                        x =>
-                        new CatalogLocale
-                        {
-                            Locale = x.GetChildClassValue("locale"),
-                            CatalogName = x.GetChildClassValue("catalog-name"),
-                            Description = x.GetChildClassValue("description"),
-                            LocaleLink = x.GetChildClassAttributeValue("locale-link", "href")
-                        }));
+                result.AddRange(query.Select(x =>
+                    new CatalogLocale
+                    {
+                        Locale = x.GetChildClassValue("locale"),
+                        CatalogName = x.GetChildClassValue("catalog-name"),
+                        Description = x.GetChildClassValue("description"),
+                        LocaleLink = x.GetChildClassAttributeValue("locale-link", "href")
+                    }));
             }
             else
             {
@@ -179,6 +179,8 @@ namespace VisualStudioHelpDownloaderPlus
             XDocument document;
             List<BookGroup> result = new List<BookGroup>();
 
+            //string str_tmp = Encoding.UTF8.GetString(data).Trim();
+            //data = Encoding.UTF8.GetBytes(str_tmp);
             using (MemoryStream stream = new MemoryStream(data))
             {
                 document = XDocument.Load(stream);
@@ -188,26 +190,26 @@ namespace VisualStudioHelpDownloaderPlus
             {
                 IEnumerable<XElement> groups =
                     document.Root.Elements()
-                            /*
-                            .Where(x => x.GetClassName() == "book-list")
-                            .Take(1)
-                            .Single()
-                            .Elements()
-                            .Where(x => x.GetClassName() == "book-groups")
-                            .Take(1)
-                            .Single()
-                            .Elements()
-                            .Where(x => x.GetClassName() == "book-group");
-                            */
-                            .Where(x => x.GetClassName()?.Equals("book-list", StringComparison.OrdinalIgnoreCase) ?? false)
-                            .Take(1)
-                            .Single()
-                            .Elements()
-                            .Where(x => x.GetClassName()?.Equals("book-groups", StringComparison.OrdinalIgnoreCase) ?? false)
-                            .Take(1)
-                            .Single()
-                            .Elements()
-                            .Where(x => x.GetClassName()?.Equals("book-group", StringComparison.OrdinalIgnoreCase) ?? false);
+                    /*
+                    .Where(x => x.GetClassName() == "book-list")
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName() == "book-groups")
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName() == "book-group");
+                    */
+                    .Where(x => x.GetClassName()?.Equals("book-list", StringComparison.OrdinalIgnoreCase) ?? false)
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName()?.Equals("book-groups", StringComparison.OrdinalIgnoreCase) ?? false)
+                    .Take(1)
+                    .Single()
+                    .Elements()
+                    .Where(x => x.GetClassName()?.Equals("book-group", StringComparison.OrdinalIgnoreCase) ?? false);
 
                 foreach (XElement group in groups)
                 {
@@ -273,7 +275,6 @@ namespace VisualStudioHelpDownloaderPlus
 
                         if (catalog.Name == "dev10")
                         {
-
                             var localeDes = new Dictionary<string, string>
                             {
                                 {"fr-fr", @"français (France)"},
@@ -297,36 +298,34 @@ namespace VisualStudioHelpDownloaderPlus
 
                         if (catalog.Name != "dev10")
                         {
-
                             IEnumerable<XElement> paths =
-                                 /*
-                                  book.Elements()
-                                     .Where(x => x.GetClassName() == "properties")
-                                     .Take(1)
-                                     .Single()
-                                     .Elements()
-                                     .Where(x => x.GetClassName() == "paths")
-                                     .Take(1)
-                                     .Single()
-                                     .Elements()
-                                     .Where(x => x.GetClassName() == "path");
-                             //.Take( 1 )
-                             //.Single();
-                                     */
-                                 //XElement path =
-                                 book.Elements()
-                                    .Where(x => x.GetClassName()?.Equals("properties", StringComparison.OrdinalIgnoreCase) ?? false)
-                                    .Take(1)
-                                    .Single()
-                                    .Elements()
-                                    .Where(x => x.GetClassName()?.Equals("paths", StringComparison.OrdinalIgnoreCase) ?? false)
-                                    .Take(1)
-                                    .Single()
-                                    .Elements()
-                                    .Where(x => x.GetClassName()?.Equals("path", StringComparison.OrdinalIgnoreCase) ?? false);
-                                    //.Take(1)
-                                    //.Single();
-
+                                /*
+                                book.Elements()
+                                .Where(x => x.GetClassName() == "properties")
+                                .Take(1)
+                                .Single()
+                                .Elements()
+                                .Where(x => x.GetClassName() == "paths")
+                                .Take(1)
+                                .Single()
+                                .Elements()
+                                .Where(x => x.GetClassName() == "path");
+                                //.Take( 1 )
+                                //.Single();
+                                */
+                                //XElement path =
+                                book.Elements()
+                                .Where(x => x.GetClassName()?.Equals("properties", StringComparison.OrdinalIgnoreCase) ?? false)
+                                .Take(1)
+                                .Single()
+                                .Elements()
+                                .Where(x => x.GetClassName()?.Equals("paths", StringComparison.OrdinalIgnoreCase) ?? false)
+                                .Take(1)
+                                .Single()
+                                .Elements()
+                                .Where(x => x.GetClassName()?.Equals("path", StringComparison.OrdinalIgnoreCase) ?? false);
+                                //.Take(1)
+                                //.Single();
 
                             foreach (XElement path in paths)
                             {
@@ -358,8 +357,8 @@ namespace VisualStudioHelpDownloaderPlus
                             }
                         }
 
-
-                        //XElement packs = book.Elements()
+                        //XElement packs =
+                        //    book.Elements()
                         //    .Where(x => x.GetClassName() == "packages")
                         //    .Take(1).Single();
                         //if (packs != null)
@@ -367,40 +366,40 @@ namespace VisualStudioHelpDownloaderPlus
                         //    b.PackagesBeforeContext = ((XText)(packs.FirstNode)).Value;
                         //}
                         IEnumerable<XElement> packages;
-        //                if (catalog.Name == "dev10")
-        //                {
-        //                    //var parts = bookGroup.Name.Split('_');
-        //                    //b.Category = parts[0];
-        //                    b.Category = bookGroup.Name;
+                        //                if (catalog.Name == "dev10")
+                        //                {
+                        //                    //var parts = bookGroup.Name.Split('_');
+                        //                    //b.Category = parts[0];
+                        //                    b.Category = bookGroup.Name;
 
-        ////                    packages = book.Elements()
-        ////                        //.Where(x => x.GetClassName() == "properties")
-        ////                        //.Take(1)
-        ////                        //.Single()
-        ////                        //.Elements()
-        ////                        .Where(x => x.GetClassName() == "packages")
-        ////                        .Take( 1 )
-        ////.Single()
-        ////.Elements()
-        ////.Where( x => x.GetClassName() == "package");
-        //                }
-        //                //else
+                        ////                    packages =
+                        ////                        book.Elements()
+                        ////                        //.Where(x => x.GetClassName() == "properties")
+                        ////                        //.Take(1)
+                        ////                        //.Single()
+                        ////                        //.Elements()
+                        ////                        .Where(x => x.GetClassName() == "packages")
+                        ////                        .Take( 1 )
+                        ////                        .Single()
+                        ////                        .Elements()
+                        ////                        .Where( x => x.GetClassName() == "package");
+                        //                }
+                        //                //else
                         {
                             packages =
+                                book.Elements()
                                 /*
-                                book.Elements()
-                                    .Where(x => x.GetClassName() == "packages")
-                                    .Take(1)
-                                    .Single()
-                                    .Elements()
-                                    .Where(x => x.GetClassName() == "package");
-                                    */
-                                book.Elements()
-                                    .Where(x => x.GetClassName()?.Equals("packages", StringComparison.OrdinalIgnoreCase) ?? false)
-                                    .Take(1)
-                                    .Single()
-                                    .Elements()
-                                    .Where(x => x.GetClassName()?.Equals("package", StringComparison.OrdinalIgnoreCase) ?? false);
+                                .Where(x => x.GetClassName() == "packages")
+                                .Take(1)
+                                .Single()
+                                .Elements()
+                                .Where(x => x.GetClassName() == "package");
+                                */
+                                .Where(x => x.GetClassName()?.Equals("packages", StringComparison.OrdinalIgnoreCase) ?? false)
+                                .Take(1)
+                                .Single()
+                                .Elements()
+                                .Where(x => x.GetClassName()?.Equals("package", StringComparison.OrdinalIgnoreCase) ?? false);
                         }
 
                         foreach (XElement package in packages)
@@ -462,9 +461,9 @@ namespace VisualStudioHelpDownloaderPlus
             XElement metaDateElemet2 = CreateElement("meta", null, null);
             metaDateElemet2.SetAttributeValue(XName.Get("http-equiv", string.Empty), "Content-Location");
             metaDateElemet2.SetAttributeValue(
-                    XName.Get("content", string.Empty),
-                    string.Format(CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/serviceapi/catalogs/{0}/{1}",
-                    objCatalog.Name.ToLowerInvariant(), objLocale.Locale));
+                XName.Get("content", string.Empty),
+                string.Format(CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/serviceapi/catalogs/{0}/{1}",
+                objCatalog.Name.ToLowerInvariant(), objLocale.Locale));
 
             XElement linkElement = CreateElement("link", null, null);
             linkElement.SetAttributeValue(XName.Get("type", string.Empty), "text/css");
@@ -783,9 +782,9 @@ namespace VisualStudioHelpDownloaderPlus
             //XElement metaDateElemet2 = CreateElement("meta", null, null);
             //metaDateElemet2.SetAttributeValue(XName.Get("http-equiv", string.Empty), "Content-Location");
             //metaDateElemet2.SetAttributeValue(
-            //        XName.Get("content", string.Empty),
-            //        string.Format(CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/serviceapi/catalogs/{0}/{1}",
-            //        objCatalog.Name.ToLowerInvariant(), objLocale.Locale));
+            //    XName.Get("content", string.Empty),
+            //    string.Format(CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/serviceapi/catalogs/{0}/{1}",
+            //    objCatalog.Name.ToLowerInvariant(), objLocale.Locale));
 
             var linkElement1 = CreateElement("link", null, null);
             linkElement1.SetAttributeValue(XName.Get("type", string.Empty), "text/css");
@@ -828,8 +827,8 @@ namespace VisualStudioHelpDownloaderPlus
                 descElement
                 ,
                 iconElement
-            //,
-            //productGroupsLinkElement
+                //,
+                //productGroupsLinkElement
             );
 
             var bookListElement = CreateElement("div", "book-list", null);
@@ -926,9 +925,9 @@ namespace VisualStudioHelpDownloaderPlus
             //XElement metaDateElemet2 = CreateElement("meta", null, null);
             //metaDateElemet2.SetAttributeValue(XName.Get("http-equiv", string.Empty), "Content-Location");
             //metaDateElemet2.SetAttributeValue(
-            //        XName.Get("content", string.Empty),
-            //        string.Format(CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/serviceapi/catalogs/{0}/{1}",
-            //        objCatalog.Name.ToLowerInvariant(), objLocale.Locale));
+            //    XName.Get("content", string.Empty),
+            //    string.Format(CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/serviceapi/catalogs/{0}/{1}",
+            //    objCatalog.Name.ToLowerInvariant(), objLocale.Locale));
 
             var linkElement1 = CreateElement("link", null, null);
             linkElement1.SetAttributeValue(XName.Get("type", string.Empty), "text/css");
@@ -953,7 +952,6 @@ namespace VisualStudioHelpDownloaderPlus
             iconElement.SetAttributeValue(XName.Get("src", string.Empty), "../../content/image/ic298417");
             //iconElement.SetAttributeValue(XName.Get("src", string.Empty), @"http://services.mtps.microsoft.com/ServiceAPI/content/image/ic298417");
             iconElement.SetAttributeValue(XName.Get("alt", string.Empty), "VS 100 Icon");
-
 
             //string productLink = bookGroup.CreateFileName();
             //var productLinkElement = CreateElement("a", "product-link", bookGroup.Name);
@@ -1027,7 +1025,6 @@ namespace VisualStudioHelpDownloaderPlus
                 else
                     constituentLink = string.Format(CultureInfo.InvariantCulture, "packages/{0}", package.Name);
 
-
                 XElement currentLinkElement = CreateElement("a", "current-link", package.CreateFileName());
                 currentLinkElement.SetAttributeValue(XName.Get("href", string.Empty), curlink);
 
@@ -1045,8 +1042,8 @@ namespace VisualStudioHelpDownloaderPlus
                     CreateElement("span", "package-size-bytes-uncompressed", package.PackageSizeBytesUncompressed.ToString()),
                     //new XText(package.ConstituentLinkBeforeContext),
                     constituentLinkElement
-                //,
-                //new XText(package.ConstituentLinkAfterContext)
+                    //,
+                    //new XText(package.ConstituentLinkAfterContext)
                 );
 
                 packageListElement.Add(packageElement);

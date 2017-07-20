@@ -37,6 +37,7 @@ namespace VisualStudioHelpDownloaderPlus
         /// </exception>
         public Downloader()
         {
+            _client.Encoding = Encoding.UTF8;
             _client.BaseAddress = @"http://services.mtps.microsoft.com/ServiceAPI/catalogs/";
 
             string directory = Path.GetDirectoryName(Application.ExecutablePath);
@@ -243,9 +244,15 @@ namespace VisualStudioHelpDownloaderPlus
                         packageFileDest = new FileInfo(packagePathDest);
                         if (packageFileDest.Exists)
                         {
+                            package.State = PackageState.Ready;
                             //if ( packageFileDest.Length == new Downloader().FetchContentLength( package.CurrentLink ) )
                             //{
-                            package.State = packageFileDest.LastWriteTime == package.LastModified ? PackageState.Ready : PackageState.OutOfDate;
+                            //var downloader = new Downloader();
+                            //if (packageFileDest.LastWriteTime != package.LastModified)
+                            //{
+                            //    package.LastModified = downloader.FetchLastModified(package.CurrentLink);
+                            //}
+                            //package.State = packageFileDest.LastWriteTime == package.LastModified ? PackageState.Ready : PackageState.OutOfDate;
                             //}
                             //else
                             //{
@@ -539,9 +546,6 @@ namespace VisualStudioHelpDownloaderPlus
                     var lastModifiedTimeBook = new DateTime(2000, 1, 1, 0, 0, 0);
                     foreach (Package package in book.Packages)
                     {
-                        if (package.LastModified > lastModifiedTimeBook)
-                            lastModifiedTimeBook = package.LastModified;
-
                         if (book.Wanted)
                         {
                             string name = package.Name.ToLowerInvariant();
@@ -549,14 +553,18 @@ namespace VisualStudioHelpDownloaderPlus
 
                             if (!packages.ContainsKey(name))
                             {
+                                //package.LastModified = FetchLastModified(package.CurrentLink);
+                                //package.PackageSizeBytes = FetchContentLength(package.CurrentLink);
+
                                 packages.Add(name, package);
                             }
+                            //package.LastModified = packages[name].LastModified;
+                            //package.PackageSizeBytes = packages[name].PackageSizeBytes;
                         }
-                    }
-                    book.LastModified = lastModifiedTimeBook;
 
-                    if (book.LastModified > lastModifiedTimeBookGroup)
-                        lastModifiedTimeBookGroup = book.LastModified;
+                        if (package.LastModified > lastModifiedTimeBook)
+                            lastModifiedTimeBook = package.LastModified;
+                    }
 
                     if (book.Wanted)
                     {
@@ -568,7 +576,12 @@ namespace VisualStudioHelpDownloaderPlus
                         if (!strLocales.Contains(book.Locale))
                             strLocales.Add(book.Locale);
                     }
+
+                    book.LastModified = lastModifiedTimeBook;
+                    if (book.LastModified > lastModifiedTimeBookGroup)
+                        lastModifiedTimeBookGroup = book.LastModified;
                 }
+
                 bookGroup.LastModified = lastModifiedTimeBookGroup;
                 if (bookGroup.LastModified > lastModifiedTimeCatalogLocale)
                     lastModifiedTimeCatalogLocale = bookGroup.LastModified;
@@ -755,17 +768,43 @@ namespace VisualStudioHelpDownloaderPlus
                 {
                     if (File.Exists(targetFileName))
                     {
-                        if (FetchContentLength(package.CurrentLink) != new FileInfo(targetFileName).Length)
+                        FileInfo curFileInfo = new FileInfo(targetFileName);
+
+                        //if (package.State == PackageState.OutOfDate)
+                        if (package.LastModified != curFileInfo.LastWriteTime)
                         {
-                            package.State = PackageState.NotDownloaded;
+                            package.LastModified = FetchLastModified(package.CurrentLink);
+                        }
+                        if (package.LastModified != curFileInfo.LastWriteTime)
+                        {
+                            //File.Delete(targetFileName);
+                            package.State = PackageState.OutOfDate;
+                        }
+
+                        if (package.PackageSizeBytes != curFileInfo.Length)
+                        {
+                            package.PackageSizeBytes = FetchContentLength(package.CurrentLink);
+                        }
+                        if (package.PackageSizeBytes != curFileInfo.Length)
+                        {
                             File.Delete(targetFileName);
+                            package.State = PackageState.NotDownloaded;
                         }
                     }
+                    else
+                    {
+                        package.LastModified = FetchLastModified(package.CurrentLink);
+                        package.State = PackageState.NotDownloaded;
+                    }
+                }
+                else if (package.State == PackageState.NotDownloaded)
+                {
+                    package.LastModified = FetchLastModified(package.CurrentLink);
                 }
 
-                if (package.State == PackageState.NotDownloaded /*|| package.State == PackageState.OutOfDate*/ )
+                if (package.State == PackageState.NotDownloaded /*|| package.State == PackageState.OutOfDate*/)
                 {
-                    //Debug.Print( "         Downloading : '{0}' to '{1}'", package.CurrentLink, targetFileName );
+                    //Debug.Print("         Downloading : '{0}' to '{1}'", package.CurrentLink, targetFileName);
                     _client.DownloadFile(package.CurrentLink, targetFileName);
                 }
 
@@ -826,8 +865,11 @@ namespace VisualStudioHelpDownloaderPlus
 
                             //foreach (Package package in packages.Values)
                             //{
-                            //    if (fileName.ToLowerInvariant().Contains(package.Name.ToLowerInvariant()/* + @"("*/)
-                            //        /*|| string.Compare(fileName, package.Name, true) == 0*/)
+                            //    if (string.Compare(fileName, 0, package.Name.ToLowerInvariant() + @"(", 0, package.Name.Length + 1, true) == 0
+                            //         || string.Compare(fileName, 0, package.Name.ToLowerInvariant() + @".", 0, package.Name.Length + 1, true) == 0)
+
+                            ////    if (fileName.ToLowerInvariant().Contains(package.Name.ToLowerInvariant()/* + @"("*/)
+                            ////        /*|| string.Compare(fileName, package.Name, true) == 0*/)
                             //    {
                             //        File.Delete(file);
                             //        break;
@@ -856,7 +898,6 @@ namespace VisualStudioHelpDownloaderPlus
 
                 result = response.ContentLength;
                 response.Close();
-
             }
             catch (Exception e)
             {
@@ -897,7 +938,7 @@ namespace VisualStudioHelpDownloaderPlus
             if (string.IsNullOrWhiteSpace(filePath))
                 return;
 
-            DateTime lastModifiedTimeUtc = lastModifiedTime.ToUniversalTime();
+            DateTime lastModifiedTimeUtc = lastModifiedTime/*.ToUniversalTime()*/;
             try
             {
                 if (bDirectory)
