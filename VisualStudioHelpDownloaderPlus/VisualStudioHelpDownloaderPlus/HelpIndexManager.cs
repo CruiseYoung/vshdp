@@ -483,7 +483,7 @@ namespace VisualStudioHelpDownloaderPlus
 
             XElement catalogLocaleLinkElement = CreateElement("a", "catalog-locale-link", "Catalog locales");
             catalogLocaleLinkElement.SetAttributeValue(XName.Get("href", string.Empty),
-                string.Format(CultureInfo.InvariantCulture, @"../../catalogs/{0}", objCatalog.Name.ToLowerInvariant()));
+                string.Format(CultureInfo.InvariantCulture, @"../../catalogs/{0}/{1}", objCatalog.Name.ToLowerInvariant(), objLocale.Locale));
             //catalogLocaleLinkElement.SetAttributeValue(XName.Get("href", string.Empty),
             //    string.Format(CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/ServiceAPI/catalogs/{0}", objCatalog.Name.ToLowerInvariant()));
 
@@ -596,11 +596,11 @@ namespace VisualStudioHelpDownloaderPlus
 
                 string curlink;
                 if (package.Name.ToLowerInvariant().Contains(@"en-us"))
-                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/en-us/{0}", package.CreateFileName());
+                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/en-us/{0}", package.CreateFileNameUri());
                 else if (package.Name.ToLowerInvariant().Contains(objLocale.Locale.ToLowerInvariant()))
-                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}/{1}", objLocale.Locale.ToLowerInvariant(), package.CreateFileName());
+                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}/{1}", objLocale.Locale.ToLowerInvariant(), package.CreateFileNameUri());
                 else
-                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}", package.CreateFileName());
+                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}", package.CreateFileNameUri());
 
                 string constituentLink;
                 if (package.Name.ToLowerInvariant().Contains(@"en-us"))
@@ -609,7 +609,6 @@ namespace VisualStudioHelpDownloaderPlus
                     constituentLink = string.Format(CultureInfo.InvariantCulture, "packages/{0}/{1}", objLocale.Locale.ToLowerInvariant(), package.Name);
                 else
                     constituentLink = string.Format(CultureInfo.InvariantCulture, "packages/{0}", package.Name);
-
 
                 XElement currentLinkElement = CreateElement("a", "current-link", package.CreateFileName());
                 currentLinkElement.SetAttributeValue(XName.Get("href", string.Empty), curlink);
@@ -704,7 +703,7 @@ namespace VisualStudioHelpDownloaderPlus
 
             XElement catalogLocaleLinkElement = CreateElement("a", "catalog-locale-link", "Catalog locales");
             catalogLocaleLinkElement.SetAttributeValue(XName.Get("href", string.Empty),
-                string.Format(CultureInfo.InvariantCulture, @"../../catalogs/{0}", objCatalog.Name.ToLowerInvariant()));
+                string.Format(CultureInfo.InvariantCulture, @"../../catalogs/{0}/{1}", objCatalog.Name.ToLowerInvariant(), objLocale.Locale));
             //catalogLocaleLinkElement.SetAttributeValue(XName.Get("href", string.Empty),
             //    string.Format(CultureInfo.InvariantCulture, @"http://services.mtps.microsoft.com/ServiceAPI/catalogs/{0}", objCatalog.Name.ToLowerInvariant()));
             detailsElement.Add(catalogLocaleLinkElement);
@@ -1011,11 +1010,11 @@ namespace VisualStudioHelpDownloaderPlus
 
                 string curlink;
                 if (package.Name.ToLowerInvariant().Contains(@"en-us"))
-                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/en-us/{0}", package.CreateFileName());
+                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/en-us/{0}", package.CreateFileNameUri());
                 else if (package.Name.ToLowerInvariant().Contains(objLocale.Locale.ToLowerInvariant()))
-                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}/{1}", objLocale.Locale.ToLowerInvariant(), package.CreateFileName());
+                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}/{1}", objLocale.Locale.ToLowerInvariant(), package.CreateFileNameUri());
                 else
-                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}", package.CreateFileName());
+                    curlink = string.Format(CultureInfo.InvariantCulture, "packages/{0}", package.CreateFileNameUri());
 
                 string constituentLink;
                 if (package.Name.ToLowerInvariant().Contains(@"en-us"))

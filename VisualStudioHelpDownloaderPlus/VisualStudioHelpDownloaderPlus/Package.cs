@@ -187,6 +187,17 @@ namespace VisualStudioHelpDownloaderPlus
         }
 
         /// <summary>
+        /// Create a file name
+        /// </summary>
+        /// <returns>
+        /// A string containing the file name
+        /// </returns>
+        public string CreateFileNameUri()
+        {
+            return PackageEtag != null ? string.Format(CultureInfo.InvariantCulture, "{0}({1}).cab", System.Uri.EscapeDataString(Name), PackageEtag) : string.Format(CultureInfo.InvariantCulture, "{0}.cab", System.Uri.EscapeDataString(Name));
+        }
+
+        /// <summary>
         /// Returns a string representing the object
         /// </summary>
         /// <returns>
