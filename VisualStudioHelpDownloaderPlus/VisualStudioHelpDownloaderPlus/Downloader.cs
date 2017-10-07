@@ -922,7 +922,7 @@ namespace VisualStudioHelpDownloaderPlus
 
                 var response = (HttpWebResponse)request.GetResponse();
 
-                result = response.LastModified;
+                result = response.LastModified/*.ToUniversalTime()*/;
                 response.Close();
             }
             catch (Exception e)
@@ -943,15 +943,15 @@ namespace VisualStudioHelpDownloaderPlus
             {
                 if (bDirectory)
                 {
-                    Directory.SetCreationTime/*Utc*/(filePath, lastModifiedTimeUtc);
-                    Directory.SetLastWriteTime/*Utc*/(filePath, lastModifiedTimeUtc);
-                    Directory.SetLastAccessTime/*Utc*/(filePath, lastModifiedTimeUtc);
+                    Directory.SetCreationTime/*Utc*/(filePath, lastModifiedTime);
+                    Directory.SetLastWriteTime/*Utc*/(filePath, lastModifiedTime);
+                    Directory.SetLastAccessTime/*Utc*/(filePath, lastModifiedTime);
                 }
                 else
                 {
-                    File.SetCreationTime/*Utc*/(filePath, lastModifiedTimeUtc);
-                    File.SetLastWriteTime/*Utc*/(filePath, lastModifiedTimeUtc);
-                    File.SetLastAccessTime/*Utc*/(filePath, lastModifiedTimeUtc);
+                    File.SetCreationTime/*Utc*/(filePath, lastModifiedTime);
+                    File.SetLastWriteTime/*Utc*/(filePath, lastModifiedTime);
+                    File.SetLastAccessTime/*Utc*/(filePath, lastModifiedTime);
                 }
             }
             catch (Exception e)
