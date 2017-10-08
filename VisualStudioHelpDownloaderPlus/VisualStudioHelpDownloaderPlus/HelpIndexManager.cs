@@ -411,7 +411,7 @@ namespace VisualStudioHelpDownloaderPlus
                                 Name = package.GetChildClassValue("name"),
                                 DeployedBeforeContext = package.GetChildClassBeforeContext("deployed"),
                                 Deployed = package.GetChildClassValue("deployed"),
-                                LastModified = DateTime.Parse(package.GetChildClassValue("last-modified")/*, CultureInfo.InvariantCulture*/)/*.ToUniversalTime()*/,
+                                LastModified = DateTime.Parse(package.GetChildClassValue("last-modified"), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal)/*.ToUniversalTime()*/,
                                 PackageEtag = package.GetChildClassValue("package-etag"),
                                 CurrentLink = package.GetChildClassAttributeValue("current-link", "href"),
                                 CurrentLinkContext = package.GetChildClassValue("current-link"),
@@ -591,8 +591,7 @@ namespace VisualStudioHelpDownloaderPlus
                 XElement packageElement = CreateElement("div", "package", null);
                 //var lastModifiedFmt = (package.LastModified.Millisecond % 10) == 0 ? "yyyy-MM-ddThh:mm:ss.ffZ" : "yyyy-MM-ddThh:mm:ss.fffZ";
                 var lastModifiedFmt = "s";
-
-                XElement lastModified = CreateElement("span", "last-modified", package.LastModified/*.ToUniversalTime()*/.ToString(lastModifiedFmt/*, CultureInfo.InvariantCulture*/));
+                XElement lastModified = CreateElement("span", "last-modified", package.LastModified.ToUniversalTime().ToString(lastModifiedFmt, CultureInfo.InvariantCulture));
                 //XElement lastModified = new XElement("span", package.LastModified);
 
                 string curlink;
@@ -973,8 +972,7 @@ namespace VisualStudioHelpDownloaderPlus
 
             //var lastModifiedFmtBook = (book.LastModified.Millisecond % 10) == 0 ? "yyyy-MM-ddThh:mm:ss.ffZ" : "yyyy-MM-ddThh:mm:ss.fffZ";
             var lastModifiedFmtBook = "s";
-
-            XElement bookLastModified = CreateElement("span", "last-modified", book.LastModified/*.ToUniversalTime()*/.ToString(lastModifiedFmtBook/*, CultureInfo.InvariantCulture*/));
+            XElement bookLastModified = CreateElement("span", "last-modified", book.LastModified.ToUniversalTime().ToString(lastModifiedFmtBook, CultureInfo.InvariantCulture));
 
             //descElement.Add(
             //    bookLastModified,
@@ -1007,8 +1005,7 @@ namespace VisualStudioHelpDownloaderPlus
                 XElement packageElement = CreateElement("div", "package", null);
                 //var lastModifiedFmt = (package.LastModified.Millisecond % 10) == 0 ? "yyyy-MM-ddThh:mm:ss.ffZ" : "yyyy-MM-ddThh:mm:ss.fffZ";
                 var lastModifiedFmt = "s";
-
-                XElement lastModified = CreateElement("span", "last-modified", package.LastModified/*.ToUniversalTime()*/.ToString(lastModifiedFmt/*, CultureInfo.InvariantCulture*/));
+                XElement lastModified = CreateElement("span", "last-modified", package.LastModified.ToUniversalTime().ToString(lastModifiedFmt, CultureInfo.InvariantCulture));
                 //XElement lastModified = new XElement("span", package.LastModified);
 
                 string curlink;

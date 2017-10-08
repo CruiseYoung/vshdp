@@ -938,7 +938,7 @@ namespace VisualStudioHelpDownloaderPlus
             if (string.IsNullOrWhiteSpace(filePath))
                 return;
 
-            DateTime lastModifiedTimeUtc = lastModifiedTime/*.ToUniversalTime()*/;
+            //DateTime lastModifiedTimeUtc = lastModifiedTime/*.ToUniversalTime()*/;
             try
             {
                 if (bDirectory)
