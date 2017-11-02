@@ -851,10 +851,17 @@ namespace VisualStudioHelpDownloaderPlus
                             else
                             {
                                 string packagePathDest = Path.Combine(cabDirectory, packages[fileName].CreateFileName());
-                                if (file != packagePathDest /*&& !File.Exists( packagePathDest )*/ )
+                                if (file != packagePathDest)
                                 {
-                                    FileInfo oldFile = new FileInfo(file);
-                                    oldFile.MoveTo(packagePathDest);
+                                    if (File.Exists(packagePathDest))
+                                    {
+                                        File.Delete(file);
+                                    }
+                                    else
+                                    {
+                                        FileInfo oldFile = new FileInfo(file);
+                                        oldFile.MoveTo(packagePathDest);
+                                    }
                                 }
                             }
                         }
