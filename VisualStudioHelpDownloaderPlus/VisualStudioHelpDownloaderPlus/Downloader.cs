@@ -699,14 +699,18 @@ namespace VisualStudioHelpDownloaderPlus
             if (oldVsDirName == "dev10")
                 oldVsDirName = "VisualStudio10";
             string oldvsDirectory = Path.Combine(cachePath, oldVsDirName);
-            string oldpackagesDirectory = Path.Combine(oldvsDirectory, @"packages");
-            string oldpackagesDirectoryLocale = Path.Combine(oldpackagesDirectory, codeLocale.ToLowerInvariant());
-            string oldpackagesDirectoryEnUs = Path.Combine(oldpackagesDirectory, "en-us");
-            CleanupOldPackages(packages, null, oldvsDirectory, false);
-            CleanupOldPackages(packages, null, oldpackagesDirectory, false);
-            CleanupOldPackages(packages, codeLocale, oldpackagesDirectoryLocale, false);
-            if (!codeLocale.ToLowerInvariant().Contains(@"en-us") && includeEnUs)
-                CleanupOldPackages(packages, @"en-us", oldpackagesDirectoryEnUs, false);
+            if (oldvsDirectory != vsDirectory)
+            {
+                string oldpackagesDirectory = Path.Combine(oldvsDirectory, @"packages");
+                string oldpackagesDirectoryLocale = Path.Combine(oldpackagesDirectory, codeLocale.ToLowerInvariant());
+                string oldpackagesDirectoryEnUs = Path.Combine(oldpackagesDirectory, "en-us");
+                CleanupOldPackages(packages, null, oldvsDirectory, false);
+                CleanupOldPackages(packages, null, oldpackagesDirectory, false);
+                CleanupOldPackages(packages, codeLocale, oldpackagesDirectoryLocale, false);
+
+                if (!codeLocale.ToLowerInvariant().Contains(@"en-us") && includeEnUs)
+                    CleanupOldPackages(packages, @"en-us", oldpackagesDirectoryEnUs, false);
+            }
 
             CleanupOldPackages(packages, null, Path.Combine(cachePath, @"packages"), false);
             CleanupOldPackages(packages, null, Path.Combine(cachePath, @"packages", codeLocale.ToLowerInvariant()), false);
