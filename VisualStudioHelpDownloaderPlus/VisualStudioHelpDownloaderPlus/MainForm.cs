@@ -505,7 +505,12 @@ namespace VisualStudioHelpDownloaderPlus
             }
         }
 
-/*
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        /*
         /// <summary>
         /// Called when the language combobox selection is changed. Clear the
         /// currently list of available books and reshow the instruction.

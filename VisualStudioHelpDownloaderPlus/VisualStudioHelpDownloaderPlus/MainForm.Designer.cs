@@ -227,6 +227,7 @@ namespace VisualStudioHelpDownloaderPlus
             packagesToDownload});
             this.booksList.FullRowSelect = true;
             this.booksList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.booksList.HideSelection = false;
             this.booksList.HoverSelection = true;
             this.booksList.Location = new System.Drawing.Point(12, 13);
             this.booksList.Name = "booksList";
@@ -299,6 +300,7 @@ namespace VisualStudioHelpDownloaderPlus
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "%TITLE%";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

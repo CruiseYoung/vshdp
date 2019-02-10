@@ -40,8 +40,12 @@ namespace VisualStudioHelpDownloaderPlus
                 throw new ArgumentNullException(nameof(data));
             }
 
-            XDocument document;
             List<Catalog> result = new List<Catalog>();
+
+            XDocument document = XDocument.Parse(Encoding.UTF8.GetString(data).Trim());
+            
+            /*
+            XDocument document;
 
             string str_tmp = Encoding.UTF8.GetString(data).Trim();
             data = Encoding.UTF8.GetBytes(str_tmp);
@@ -50,6 +54,7 @@ namespace VisualStudioHelpDownloaderPlus
             {
                 document = XDocument.Load(stream);
             }
+            */
 
             if (document.Root != null)
             {
@@ -100,6 +105,11 @@ namespace VisualStudioHelpDownloaderPlus
             }
 
             List<CatalogLocale> result = new List<CatalogLocale>();
+            // This would normally be loaded directly from the bytes but the MS server
+            // seems to be returning junk whitespace at the start that cant be loaded
+            // directly as XML
+            XDocument document = XDocument.Parse(Encoding.UTF8.GetString(data).Trim());
+/*            
             XDocument document;
 
             string str_tmp = Encoding.UTF8.GetString(data).Trim();
@@ -108,7 +118,7 @@ namespace VisualStudioHelpDownloaderPlus
             {
                 document = XDocument.Load(stream);
             }
-
+*/
             if (document.Root != null)
             {
                 IEnumerable<XElement> query =
@@ -145,7 +155,7 @@ namespace VisualStudioHelpDownloaderPlus
             }
             else
             {
-                throw new XmlException("Catalog Locales Listing");
+                throw new XmlException( "Missing document root" );
             }
             return result;
         }
@@ -176,9 +186,11 @@ namespace VisualStudioHelpDownloaderPlus
                 throw new ArgumentNullException(nameof(data));
             }
 
-            XDocument document;
             List<BookGroup> result = new List<BookGroup>();
 
+            //XDocument document = XDocument.Parse(Encoding.UTF8.GetString(data).Trim());
+
+            XDocument document;
             //string str_tmp = Encoding.UTF8.GetString(data).Trim();
             //data = Encoding.UTF8.GetBytes(str_tmp);
             using (MemoryStream stream = new MemoryStream(data))

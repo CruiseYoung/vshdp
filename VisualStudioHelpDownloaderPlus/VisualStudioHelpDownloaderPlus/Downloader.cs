@@ -53,6 +53,7 @@ namespace VisualStudioHelpDownloaderPlus
                     if (element != null)
                     {
                         element = element.Elements().Single(x => x.Name.LocalName?.Equals("proxy", StringComparison.OrdinalIgnoreCase) ?? false);
+                        //WebProxy
                         _proxy = new WebProxy(element.Attributes().Single(x => x.Name.LocalName?.Equals("address", StringComparison.OrdinalIgnoreCase) ?? false).Value)
                         {
                             Credentials =
@@ -312,21 +313,6 @@ namespace VisualStudioHelpDownloaderPlus
             if (!result.Contains(catalogVisualStudio10) && !result.Contains(catalogDev10))
                 result.Add(catalogDev10);
 
-            Catalog catalogVisualStudio15 = new Catalog
-            {
-                Name = "VisualStudio15",
-                Description = "VisualStudio15",
-                CatalogLink = string.Empty//"../catalogs/VisualStudio15"
-            };
-            Catalog catalogDev15 = new Catalog
-            {
-                Name = "dev15",
-                Description = "dev15",
-                CatalogLink = string.Empty//"../catalogs/dev15"
-            };
-            if (!result.Contains(catalogVisualStudio15) && !result.Contains(catalogDev15))
-                result.Add(catalogDev15);
-
             var catalogs = result as List<Catalog>;
             catalogs?.Sort();
             return result;
@@ -482,7 +468,7 @@ namespace VisualStudioHelpDownloaderPlus
 
             //if ( progress == null )
             //{
-            //	throw new ArgumentNullException( "progress" );
+            //    throw new ArgumentNullException( "progress" );
             //}
 
             DateTime lastModifiedTimeCatalogLocale = new DateTime(2000, 1, 1, 0, 0, 0);
@@ -502,6 +488,7 @@ namespace VisualStudioHelpDownloaderPlus
                     LastModified = DateTime.Now,
                     PackageEtag = null,
                     CurrentLink = string.Format(CultureInfo.InvariantCulture, "{0}{1}.cab", BrandingPackageUrl, BrandingPackageName1),
+                    CurrentLinkContext = string.Format(CultureInfo.InvariantCulture, "{0}.cab", BrandingPackageName1),
                     PackageSizeBytes = 0,
                     PackageSizeBytesUncompressed = 0,
                     PackageConstituentLink = string.Format(CultureInfo.InvariantCulture, "{0}{1}", @"../../serviceapi/packages/brands/", BrandingPackageName1)
@@ -509,7 +496,9 @@ namespace VisualStudioHelpDownloaderPlus
                 brandingPackgeName1.LastModified = FetchLastModified(brandingPackgeName1.CurrentLink);
                 brandingPackgeName1.PackageSizeBytes = FetchContentLength(brandingPackgeName1.CurrentLink);
                 brandingPackgeName1.PackageSizeBytesUncompressed = brandingPackgeName1.PackageSizeBytes;
-                packages.Add(brandingPackgeName1.Name, brandingPackgeName1);
+                //packages.Add(brandingPackgeName1.Name.ToLowerInvariant(), brandingPackgeName1);
+                packages.Add(brandingPackgeName1.CurrentLinkContext.ToLowerInvariant(), brandingPackgeName1);
+
                 if (brandingPackgeName1.LastModified > lastModifiedTime)
                     lastModifiedTime = brandingPackgeName1.LastModified;
 
@@ -520,6 +509,7 @@ namespace VisualStudioHelpDownloaderPlus
                     LastModified = DateTime.Now,
                     PackageEtag = null,
                     CurrentLink = string.Format(CultureInfo.InvariantCulture, "{0}{1}.cab", BrandingPackageUrl, BrandingPackageName2),
+                    CurrentLinkContext = string.Format(CultureInfo.InvariantCulture, "{0}.cab", BrandingPackageName2),
                     PackageSizeBytes = 0,
                     PackageSizeBytesUncompressed = 0,
                     PackageConstituentLink = string.Format(CultureInfo.InvariantCulture, "{0}{1}", @"../../serviceapi/packages/brands/", BrandingPackageName2)
@@ -527,7 +517,8 @@ namespace VisualStudioHelpDownloaderPlus
                 brandingPackgeName2.LastModified = FetchLastModified(brandingPackgeName2.CurrentLink);
                 brandingPackgeName2.PackageSizeBytes = FetchContentLength(brandingPackgeName2.CurrentLink);
                 brandingPackgeName2.PackageSizeBytesUncompressed = brandingPackgeName2.PackageSizeBytes;
-                packages.Add(brandingPackgeName2.Name, brandingPackgeName2);
+                //packages.Add(brandingPackgeName2.Name.ToLowerInvariant(), brandingPackgeName2);
+                packages.Add(brandingPackgeName2.CurrentLinkContext.ToLowerInvariant(), brandingPackgeName2);
                 if (brandingPackgeName2.LastModified > lastModifiedTime)
                     // ReSharper disable once RedundantAssignment
                     lastModifiedTime = brandingPackgeName2.LastModified;
@@ -548,7 +539,8 @@ namespace VisualStudioHelpDownloaderPlus
                     {
                         if (book.Wanted)
                         {
-                            string name = package.Name.ToLowerInvariant();
+                            //string name = package.Name.ToLowerInvariant();
+                            string name = package.CurrentLinkContext.ToLowerInvariant();
                             //Debug.Print( "      Package: {0}", name );
 
                             if (!packages.ContainsKey(name))
@@ -832,13 +824,16 @@ namespace VisualStudioHelpDownloaderPlus
 
             foreach (string file in Directory.GetFiles(cabDirectory, "*.cab"))
             {
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
-                if (fileNameWithoutExtension != null)
+                var fileName = Path.GetFileName(file);
+                fileName = fileName.ToLowerInvariant();
+
+                //var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
+                //if (fileNameWithoutExtension != null)
                 {
-                    string fileName = fileNameWithoutExtension.ToLowerInvariant();
-                    var pos = fileName.IndexOf('(');
-                    if (pos >= 0)
-                        fileName = fileName.Substring(0, pos);
+                    //string fileName = fileNameWithoutExtension.ToLowerInvariant();
+                    //var pos = fileName.LastIndexOf('(');
+                    //if (pos >= 0)
+                    //    fileName = fileName.Substring(0, pos);
                     if (!string.IsNullOrEmpty(fileName))
                     {
                         if (bTargetDirectoryLocale)

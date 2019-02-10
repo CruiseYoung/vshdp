@@ -50,7 +50,7 @@ namespace VisualStudioHelpDownloaderPlus
         }
 
         /// <summary>
-        /// Gets or sets the name
+        /// Gets or sets the package name
         /// </summary>
         public string Name
         {
@@ -77,7 +77,7 @@ namespace VisualStudioHelpDownloaderPlus
         }
 
         /// <summary>
-        /// Gets or sets the last-modified
+        /// Gets or sets the last modified time.
         /// </summary>
         public DateTime LastModified
         {
@@ -86,7 +86,7 @@ namespace VisualStudioHelpDownloaderPlus
         }
 
         /// <summary>
-        /// Gets or sets the package-etag
+        /// Gets or sets the etag associated with the package
         /// </summary>
         public string PackageEtag
         {
@@ -95,7 +95,7 @@ namespace VisualStudioHelpDownloaderPlus
         }
 
         /// <summary>
-        /// Gets or sets the current-link
+        /// Gets or sets the package relative URL for downloading.
         /// </summary>
         public string CurrentLink
         {
@@ -113,7 +113,7 @@ namespace VisualStudioHelpDownloaderPlus
         }
 
         /// <summary>
-        ///  Gets or sets the package-size-bytes
+        ///  Gets or sets the package-size in bytes
         /// </summary>
         public long PackageSizeBytes
         {
@@ -176,7 +176,7 @@ namespace VisualStudioHelpDownloaderPlus
         }
 
         /// <summary>
-        /// Create a file name
+        /// Create a file name for the package file
         /// </summary>
         /// <returns>
         /// A string containing the file name

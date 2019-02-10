@@ -1,7 +1,7 @@
 ﻿软件名称：  Visual Studio Help Downloader Plus
 原 名 称：  Visual Studio 2012/2013/2015 Help Downloader
 原 官 网：  https://github.com/nickdalt/VSHD
-软件版本：  5.0.2.0
+软件版本：  5.0.3.0
 基础版本：  1.3.1.0
 软件著作人：NickDal，Alexander Kozlenko
 软件修改人：Cruise Young
@@ -10,6 +10,9 @@
 QQ交流群:   8035490
 
 修改内容：
+  v5.0.3.0(2019.01.11日)更新内容
+    1、修复当有不同package-etag而name相同的package时，缺失package的bug；
+
   v5.0.2.0(2017.11.02日)更新内容
     1、修复当目标文件存在时，移动(重命名)时，报错的bug；
 
