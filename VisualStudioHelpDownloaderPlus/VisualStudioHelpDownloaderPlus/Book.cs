@@ -120,7 +120,7 @@ namespace VisualStudioHelpDownloaderPlus
         }
 
         /// <summary>
-        /// Create a file name
+        /// Create a file name for the book index file
         /// </summary>
         /// <returns>
         /// A string containing the file name

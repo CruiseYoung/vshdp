@@ -510,7 +510,7 @@ namespace VisualStudioHelpDownloaderPlus
 
         }
 
-        /*
+/*
         /// <summary>
         /// Called when the language combobox selection is changed. Clear the
         /// currently list of available books and reshow the instruction.

@@ -781,7 +781,7 @@ namespace VisualStudioHelpDownloaderPlus
                         {
                             package.PackageSizeBytes = FetchContentLength(package.CurrentLink);
                         }
-                        if (package.PackageSizeBytes != curFileInfo.Length)
+                        if (package.PackageSizeBytes != curFileInfo.Length || !AuthenticodeTools.IsTrusted(targetFileName))
                         {
                             File.Delete(targetFileName);
                             package.State = PackageState.NotDownloaded;
@@ -802,6 +802,15 @@ namespace VisualStudioHelpDownloaderPlus
                 {
                     //Debug.Print("         Downloading : '{0}' to '{1}'", package.CurrentLink, targetFileName);
                     _client.DownloadFile(package.CurrentLink, targetFileName);
+
+                    if (!AuthenticodeTools.IsTrusted(targetFileName))
+                    {
+                        //Debug.Print("The signature on '{0}' is not valid - deleting");
+                        File.Delete(targetFileName);
+                        package.State = PackageState.NotDownloaded;
+
+                        throw new InvalidDataException($"The signature on '{targetFileName}' is not valid - deleting");
+                    }
                 }
 
                 FileLastModifiedTime(targetFileName, package.LastModified);

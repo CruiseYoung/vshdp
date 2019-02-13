@@ -187,7 +187,7 @@ namespace VisualStudioHelpDownloaderPlus
             this.startupTip.Name = "startupTip";
             this.startupTip.Size = new System.Drawing.Size(521, 15);
             this.startupTip.TabIndex = 7;
-            this.startupTip.Text = "Select your Visual Studio version, then press \"Load Languages\" to  retrieve the available languages";
+            this.startupTip.Text = "Select your Visual Studio version and then press \"Load Languages\" to  retrieve the available languages";
             this.startupTip.Visible = false;
             // 
             // downloadBooks
@@ -271,7 +271,7 @@ namespace VisualStudioHelpDownloaderPlus
             this.loadLanguagesTip.Name = "loadLanguagesTip";
             this.loadLanguagesTip.Size = new System.Drawing.Size(411, 15);
             this.loadLanguagesTip.TabIndex = 8;
-            this.loadLanguagesTip.Text = "Select your language then press \"Load Books\" to  retrieve the available books";
+            this.loadLanguagesTip.Text = "Select your language and then press \"Load Books\" to  retrieve the available books";
             this.loadLanguagesTip.Visible = false;
             // 
             // MainForm
